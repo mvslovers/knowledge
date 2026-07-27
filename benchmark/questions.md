@@ -13,24 +13,45 @@ and commits none of the *Disqualifying errors*. Partial credit is not recorded �
 correctness is the point. Run the suite with and without the KB and compare pass
 counts first, tokens and turns second.
 
+## Running the benchmark
+
+**One fresh session per question, per arm.** Never run the questions sequentially
+in a single session. Q-04 and Q-05 both read `httpxlat.c`, so whichever runs first
+puts the file in context and hands the second one its answer. Q-09 and Q-10 share a
+meta-lesson — distrust our own toolchain before suspecting MVS — and a model that
+has just learned it on one will apply it to the other. Accumulated context
+contaminates later questions and inflates the second arm, which is exactly the
+measurement the benchmark exists to make.
+
+**The KB-less arm must run with no access to this file**, and no access to the KB.
+The question text alone goes into the session; the expected answer, must-contain
+bullets and evidence stay with the grader.
+
+**Record per question:** pass/fail, which disqualifier fired if any, tokens, turns.
+Use `benchmark/results/TEMPLATE.md`; copy it to
+`benchmark/results/<date>-<model>.md` for each run.
+
 **Provenance.** Every claim in every *Expected answer* was read out of the repos
 while this file was written. Line numbers refer to the state of `main` in each
 local checkout as of 2026-07-27. Nothing here comes from model priors; where a
 prior and a source disagreed, the source won and the disagreement became the
 question.
 
-| ID | Category | Depth | Platform |
-|----|----------|-------|----------|
-| Q-01 | mvs-domain | multi-source | mvs38j |
-| Q-02 | mvs-domain | multi-source | mvs38j |
-| Q-03 | mvs-domain | multi-source | mvs38j |
-| Q-04 | encoding | single-lookup | n/a |
-| Q-05 | encoding | single-lookup | n/a |
-| Q-06 | project-internals | multi-source | mvs38j |
-| Q-07 | project-internals | single-lookup | mvs38j |
-| Q-08 | project-internals | multi-source | mvs38j |
-| Q-09 | debugging | multi-source | mvs38j |
-| Q-10 | debugging | multi-source | mvs38j |
+Nine questions are scored. Q-03 is retained in full but **blocked** — its premise
+is unverified, so it is excluded from pass counts until settled.
+
+| ID | Category | Depth | Platform | Status |
+|----|----------|-------|----------|--------|
+| Q-01 | mvs-domain | multi-source | mvs38j | scored |
+| Q-02 | mvs-domain | multi-source | mvs38j | scored |
+| Q-03 | mvs-domain | multi-source | mvs38j | **blocked — not scored** |
+| Q-04 | encoding | single-lookup | n/a | scored |
+| Q-05 | encoding | single-lookup | n/a | scored |
+| Q-06 | project-internals | multi-source | mvs38j | scored |
+| Q-07 | project-internals | single-lookup | mvs38j | scored |
+| Q-08 | project-internals | multi-source | mvs38j | scored |
+| Q-09 | debugging | multi-source | mvs38j | scored |
+| Q-10 | debugging | multi-source | mvs38j | scored |
 
 ---
 
@@ -187,6 +208,9 @@ program", which is the layer the evidence shows is never reached.
 ---
 
 ### Q-03 — Running authorized without an APF-authorized library
+
+**STATUS: BLOCKED — premise unverified.** Excluded from scoring until
+`SYS1.PARMLIB(IEAAPF00)` is inspected directly. See G-1, G-2.
 
 **Category:** mvs-domain
 **Depth:** multi-source
@@ -449,8 +473,9 @@ the HTTPD and HTTPC control blocks through `grt->grtapp1` / `grt->grtapp2`, whic
 
 **Must contain**
 
-- A CGI runs under its own GRT / writable static area, distinct from httpd's, even
-  though it shares the address space.
+- The CGI and httpd do not share the writable static area despite sharing the
+  address space: the CGI's read of the static comes back empty while httpd's own
+  read of the same static is populated.
 - Therefore httpd-core file-scope statics read back empty/NULL when the core
   function is invoked from the CGI.
 - The fix is to resolve the pointer while running in httpd's own GRT and then pass
@@ -460,6 +485,8 @@ the HTTPD and HTTPC control blocks through `grt->grtapp1` / `grt->grtapp2`, whic
   right shape passes, and the disqualifiers below catch the wrong shapes.)
 - The CGI obtains HTTPD/HTTPC via `grt->grtapp1` / `grt->grtapp2`.
 
+GRT scope itself is an open question (G-3) and is not graded.
+
 **Disqualifying errors**
 
 - Asserting that because the CGI runs in httpd's address space the statics are
@@ -468,7 +495,8 @@ the HTTPD and HTTPC control blocks through `grt->grtapp1` / `grt->grtapp2`, whic
   it into a GETMAIN'd address-space-wide singleton, or by re-linking the CGI into
   httpd.
 - Attributing the empty read to storage-key protection, subpool ownership, or
-  reentrancy (RENT) alone, without naming the per-module GRT/WSA.
+  reentrancy (RENT) alone, without identifying that the two modules hold separate
+  copies of the static.
 - Claiming CGI modules cannot call back into the server at all.
 
 **Evidence**
@@ -792,8 +820,6 @@ a 256-byte buffer, so IEWL caps RLD data at 236 bytes per record.
   at or below 16384), independent of the text-record boundaries.
 - The dropped region is zeros, and the first zero halfword executed is what gives
   S0C1.
-- The diagnostic lesson: scan the emitted member bytes rather than trusting AMBLIST
-  or the control-record CCW counts, which reported the intended size.
 
 **Disqualifying errors**
 
@@ -904,11 +930,15 @@ intent.
 
 ## Notes on construction
 
-- **Coverage:** 3 mvs-domain (Q-01, Q-02, Q-03), 2 encoding (Q-04, Q-05), 3
-  project-internals (Q-06, Q-07, Q-08), 2 debugging (Q-09, Q-10).
+- **Coverage:** ten questions written, **9 scored and 1 blocked** (Q-03). By
+  category: 3 mvs-domain (Q-01, Q-02, Q-03 — of which Q-03 is the blocked one, so
+  2 scored), 2 encoding (Q-04, Q-05), 3 project-internals (Q-06, Q-07, Q-08),
+  2 debugging (Q-09, Q-10).
 - **Retrieval depth:** seven questions are multi-source (Q-01, Q-02, Q-03, Q-06,
-  Q-08, Q-09, Q-10), each requiring facts combined from at least two files, or from a
-  file plus a commit message. Three are single-lookup (Q-04, Q-05, Q-07).
+  Q-08, Q-09, Q-10 — six of them scored), each requiring facts combined from at
+  least two files, or from a file plus a commit message. Three are single-lookup
+  (Q-04, Q-05, Q-07). The scored set therefore still clears the floor of three
+  multi-source questions with room to spare.
 - **Independence:** no question's *Expected answer* states a fact that is graded in
   another question. Q-01, Q-02 and Q-08 all touch the ufsd SSI router but grade
   disjoint facts (cross-AS POST/WAIT mechanics; the double-start message; the session
