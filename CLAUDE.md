@@ -91,7 +91,9 @@ knowledge/
 │   └── listings.md        source decks we have (JES2, compiler, linker, …)
 ├── conflicts/             ← open contradictions awaiting a human decision (§9)
 ├── log/                   ← ingest run log (§8)
-└── inbox/                 ← raw, unrefined capture. never cited. drained regularly.
+├── inbox/                 ← raw, unrefined capture. never cited. drained regularly.
+├── benchmark/             ← fixed question set + results (§10)
+└── tools/                 ← kb-index.py, kb-lint.py (§11)
 ```
 
 **Markdown is the only truth.** Every other artifact — `INDEX.md`, the dependency
@@ -145,6 +147,7 @@ Stable IDs survive file moves; paths do not. Always cite by ID.
 | `ECO-<nnn>`         | Cross-cutting              | `ECO-0011`        |
 | `PB-<nnn>`          | Playbook                   | `PB-0007`         |
 | `PM-<yyyy>-<nnn>`   | Postmortem                 | `PM-2026-003`     |
+| `SRC-<nnn>`         | Reference material         | `SRC-0012`        |
 | `CF-<yyyy>-<nnn>`   | Open conflict              | `CF-2026-014`     |
 
 IDs are never reused and never renumbered. A retired document gets `status: obsolete`
@@ -197,7 +200,7 @@ question**. Do not read the KB broadly. Do not load directories "for context".
    more often than in `mvs/`.
 6. **The project repo itself**, for implementation detail below the contract level.
 
-The point of the ladder is token discipline. Search cost dominate[118;1:3us: every search step
+The point of the ladder is token discipline. Search cost dominates: every search step
 re-reads the whole conversation so far, so an unfocused search gets more expensive
 each round. Two targeted rungs beat ten exploratory greps.
 
