@@ -8,10 +8,23 @@ will answer fluently and be specifically wrong — usually because public traini
 data describes MVS/XA, ESA or z/OS behaviour, or because it assumes the
 industry-standard value where we deliberately deviate.
 
+An answer fails `provenance` if its **justification for a graded fact rests on a
+named codebase, file, or product that is not ours**. The question asks about our
+system; an answer about a different system that happens to agree is not knowledge
+of ours. An answer that reasons from the symptoms in the question and attributes
+the behaviour to our system *without naming a source* is **not** a provenance
+failure — it is graded on *Must contain* alone. Record provenance three-valued:
+`ours` / `foreign` / `none`. Applies to both arms.
+
 **Scoring.** An answer passes only if it states every bullet under *Must contain*
 and commits none of the *Disqualifying errors*. Partial credit is not recorded —
 correctness is the point. Run the suite with and without the KB and compare pass
 counts first, tokens and turns second.
+
+A *Must contain* bullet is satisfied **only if the answer commits to the statement
+as its conclusion**, not if it lists it among several co-equal possibilities. A
+ranked list whose top-ranked item is stated as the conclusion counts as
+committing; a list of co-equal alternatives does not.
 
 ## Running the benchmark
 
@@ -83,8 +96,10 @@ gives X'201' (S047 on the equivalent protection failure).
 
 - The POST must use the branch entry at `CVT0PT01`, not SVC 2 / the `POST` macro.
 - The POSTing side must be in supervisor state (key 0) when it does so.
-- The reply ECB the router waits on must be in key-8 storage owned by the client
-  (a stack-local in the router), **not** the key-0 CSA control block.
+- The reply ECB the router waits on must be a **stack-local in the router** —
+  key-8 storage owned by the client — **not** the key-0 CSA control block. An
+  answer that places it in common storage does not satisfy this bullet even if it
+  gets the storage key right.
 - The WAIT itself must be issued from problem state.
 - At least one of the abend codes tying a wrong choice to its failure: S102
   (cross-AS SVC 2 from problem state), S202 (SVC 2 from supervisor state), or
@@ -94,8 +109,10 @@ gives X'201' (S047 on the equivalent protection failure).
 
 - Recommending the `POST` macro / SVC 2 with an `ASCB=` (and `ERRET=`) operand as
   the cross-address-space POST mechanism.
-- Placing the client's reply ECB in the shared CSA block "so both address spaces
-  can see it".
+- Placing the client's reply ECB in the **key-0** CSA block "so both address
+  spaces can see it". (An answer that puts the ECB in common storage but obtains
+  it in the *caller's* key does not fire this disqualifier — it fails `M3`
+  instead. This disqualifier is about the X'201' trap, not about the location.)
 - Stating that the WAIT should be issued in supervisor state, or that the state of
   the waiter does not matter.
 - Claiming the POST can be issued from problem state as long as the ECB is shared.
@@ -404,6 +421,12 @@ carrying known bugs.
 - Stating that all three tables agree on `|`, or that `|` is 0x4F in all of them.
 - Describing LEGACY as plain CP037 or as plain IBM-1047.
 - Claiming the bracket positions are the same in CP037 and IBM-1047.
+- Naming any configuration other than LEGACY as the cause of the broken pipe.
+  (Added 2026-08-01. The 2026-07-31 baseline showed the bullet above it cannot
+  fire against the most likely wrong answer, which does not know there are three
+  tables at all and blames IBM-500 or a national code page; this one fires 3/3 on
+  that run. Both are kept — the older bullet still catches an answer that *does*
+  know the three tables and claims they agree on `|`.)
 
 **Evidence**
 
@@ -473,9 +496,13 @@ the HTTPD and HTTPC control blocks through `grt->grtapp1` / `grt->grtapp2`, whic
 
 **Must contain**
 
-- The CGI and httpd do not share the writable static area despite sharing the
-  address space: the CGI's read of the static comes back empty while httpd's own
-  read of the same static is populated.
+- The loaded module and httpd do not share the writable static area despite
+  sharing the address space **and the TCB**: the module's read of the static comes
+  back empty while httpd's own read of the same static is populated. This follows
+  from the module being a separately linked load module built with a full
+  startfile (`crt0`/`crt1`), which calls `__grtset()` and establishes a fresh
+  CLIBGRT — it is **not** a link-line mistake, and re-linking the module against
+  httpd's objects does not merge the two static areas.
 - Therefore httpd-core file-scope statics read back empty/NULL when the core
   function is invoked from the CGI.
 - The fix is to resolve the pointer while running in httpd's own GRT and then pass
@@ -485,15 +512,17 @@ the HTTPD and HTTPC control blocks through `grt->grtapp1` / `grt->grtapp2`, whic
   right shape passes, and the disqualifiers below catch the wrong shapes.)
 - The CGI obtains HTTPD/HTTPC via `grt->grtapp1` / `grt->grtapp2`.
 
-GRT scope itself is an open question (G-3) and is not graded.
+G-3 was resolved on 2026-08-01 (see the *Gaps* section), so the GRT mechanism is
+now part of `M1` above rather than being excluded from grading.
 
 **Disqualifying errors**
 
 - Asserting that because the CGI runs in httpd's address space the statics are
   shared, and looking for the bug elsewhere.
 - Proposing to fix it by making the static a non-static global / `extern`, by moving
-  it into a GETMAIN'd address-space-wide singleton, or by re-linking the CGI into
-  httpd.
+  it into a GETMAIN'd address-space-wide singleton, by re-linking the CGI into
+  httpd, or by removing httpd's objects from the module's link line so the symbol
+  "resolves to one copy".
 - Attributing the empty read to storage-key protection, subpool ownership, or
   reentrancy (RENT) alone, without identifying that the two modules hold separate
   copies of the static.
@@ -518,8 +547,18 @@ GRT scope itself is an open question (G-3) and is not graded.
 - `httpd/src/cgihttpd.c:19-20`, `httpd/src/cgihttpc.c:18-19` — the eyecatcher checks
   (`HTTPD_EYE` / `HTTPC_EYE`) before trusting the GRT slots.
 - `libc370/doc/startup.md:38, 46` — CLIBGRT is anchored at `crt->crtgrt` and
-  `ppa->ppagrt`; `__grtget` is simply `crt->crtgrt`. (See gap G-3: this document
-  scopes the GRT per address space, which is in tension with the commit above.)
+  `ppa->ppagrt`; `__grtget` is simply `crt->crtgrt`.
+- `libc370/asm/@@crt1.asm:77-78` — `L R15,=V(@@GRTSET)` / `BALR R14,R15`,
+  commented "Anchor a CLIBGRT area as CRTGRT". Same at `@@crt0.asm:74-75`.
+  `@@crtm.asm` contains neither call — it only does `@@CRTGET` (lines 54, 106).
+- `libc370/src/clib/@@grtset.c` — `__grtset()` `calloc`s a fresh CLIBGRT and
+  assigns `crt->crtgrt = grt; ppa->ppagrt = grt;` **unconditionally**, with no
+  check for an existing one.
+- `httpd/project.toml:44-68` — every loaded module (`HTTPJES2`, `HTTPDM`,
+  `HTTPDMTT`, `HTTPDSL`, `HTTPDSRV`) is `startup = "crt1"` with
+  `src/cgistart.c` as its root.
+- `httpd/src/httplink.c:38` — `__linkds(pgm, dcb, plist, &prc)`, issued from the
+  worker thread, so the module runs on the worker's own TCB. No ATTACH.
 
 **Likely failure without KB**
 
@@ -598,6 +637,17 @@ a NULL CLIBCRT.
   with the `IDENTIFY EPLOC=CTHREAD` commented out.
 - `libc370/doc/startup.md:34-38` — the three runtime anchors: CLIBPPA per program
   invocation, CLIBCRT per TCB/thread, CLIBGRT per process/address space.
+- **Practice note (added 2026-08-01).** No module in the ecosystem is actually
+  built with `crtm`. Across every `project.toml` under `~/repos/mvs` the counts
+  are **120 × `startup = "crt1"`, 1 × `crt0`, 0 × `crtm`**, although `crtm.o` is
+  built and shipped (`libc370/build/sdk/crtm.o`). httpd's own loaded modules use
+  `crt1` deliberately — "`startup=crt1` for the threading runtime (`@@CRT1`)"
+  (`httprexx/project.toml:16-17`, `httplua/project.toml:20`) — because `crtm`
+  carries no CTHREAD entry (`@@crt1.asm:166` has it, `@@crtm.asm` does not).
+  **The graded fact is the documented rule in `startup.md`, not current
+  practice.** The two diverge; the divergence is itself KB material and should be
+  written up before the with-KB arm, so a KB document does not end up
+  contradicting the repos.
 
 **Likely failure without KB**
 
@@ -816,8 +866,13 @@ a 256-byte buffer, so IEWL caps RLD data at 236 bytes per record.
 - The truncation is in the linker's object reader / emitter — the emitted member is
   already short — not in IEWFETCH, not a track-crossing or geometry limit, and not
   the multi-text-record split.
-- The cut is at a fixed cumulative text offset of ~16 KB (the last 56-byte TXT card
-  at or below 16384), independent of the text-record boundaries.
+- The cut is at a fixed cumulative text offset, independent of the text-record
+  boundaries, and lands on **the last 56-byte TXT card at or below 16384** — not
+  at 16384 itself. Naming the ~16 KB magnitude alone does **not** satisfy this
+  bullet: the card granularity is required, because it is what explains the
+  16352 / 16376 pair. (Tightened 2026-08-01. "A hard stop at 2^14 is a buffer in
+  your own code" is pattern-matching on a power of two, which the *Likely failure*
+  note below already calls a magnet; it is not knowledge of `ld370.c`.)
 - The dropped region is zeros, and the first zero halfword executed is what gives
   S0C1.
 
@@ -899,14 +954,27 @@ mvslovers-installed SVC), what its parameter contract is beyond R0/R1, which tar
 systems ship it, or what happens on one that does not. Every "will this run on TK5 /
 on a stock 3.8j?" question depends on this and none of it is written down.
 
-**G-3 — Is the GRT per address space or per linked module?**
-`libc370/doc/startup.md:38` documents CLIBGRT as "per **process / address space**".
-Commit `4a97226` establishes that a CGI reached through the HTTPX vector "runs under
-its own GRT" inside httpd's address space. Both statements are in the repos and they
-are in tension; the reconciliation (a LINKed module with its own crt establishing a
-second CLIBGRT in the same address space) is inferable but stated nowhere. This is a
-genuine conflict candidate and would make a strong question once resolved — it is the
-root of at least three fixed bugs (#109, #111, #113).
+**G-3 — Is the GRT per address space or per linked module? — RESOLVED 2026-08-01.**
+Both repo statements are correct; the documentation is incomplete rather than wrong.
+`__CRTSET()` (`libc370/src/clib/@@crtset.c`) inherits the **originating** TCB's GRT
+via `TCBOTC` at `tcb[0x84/4]`, and the CTHREAD entry at `@@crt1.asm:166` calls only
+`@@CRTSET`, never `@@GRTSET`. An ATTACHed worker therefore inherits httpd's GRT, which
+is exactly the scope `startup.md:38` describes. The case the document does not cover is
+the **LINK** case: a module fetched by LINK SVC on the same TCB with a full startfile
+runs `@@GRTSET` (`@@crt1.asm:77-78`), which `calloc`s a fresh CLIBGRT and overwrites
+`crt->crtgrt` unconditionally. `crtm` is precisely the startfile that does not do this.
+`cgistart.c` re-seeds only `grtapp1`/`grtapp2` into the fresh GRT (lines 81, 86, 98);
+everything else httpd holds in its own GRT stays invisible from the module — which is
+what #109, #111 and #113 each are. Now graded as part of Q-06's `M1`. The full trace,
+including a derived-but-unverified consequence about CRT ordering that still wants a
+live check, is in `benchmark/results/2026-07-31-baseline/` follow-up notes.
+
+**G-3a — Why is nothing built with `crtm`?** Falls out of resolving G-3: `startup.md`
+documents `crtm` as the correct startfile for a module entered inside a running C
+runtime on the same TCB, and no module in the ecosystem uses it (120 × `crt1`, 1 ×
+`crt0`, 0 × `crtm`). For httpd's modules the `crt1` choice is deliberate and recorded
+(threading runtime), but whether the rule in `startup.md` should be restated, scoped,
+or retired is not written down anywhere. Un-askable as a graded question until it is.
 
 **G-4 — Which reply-wait and drain timings are contractual, and which are incidental?**
 `ufsd/src/ufsd#ssi.c:49,54` fix `UFSD_WAIT_INTERVAL` at 500 hundredths and
