@@ -1,0 +1,237 @@
+########## results/baseline-Q-01-r1.json
+null
+########## results/baseline-Q-01-r2.json
+null
+########## results/baseline-Q-01-r3.json
+null
+########## results/baseline-Q-02-r1.json
+null
+########## results/baseline-Q-02-r2.json
+null
+########## results/baseline-Q-02-r3.json
+null
+########## results/baseline-Q-04-r1.json
+null
+########## results/baseline-Q-04-r2.json
+Short version: ASCII `0x0A` becomes EBCDIC **`0x15`**, that byte round‑trips cleanly back to `0x0A`, and an EBCDIC **`0x25`** coming from elsewhere *also* collapses to `0x0A` — but it does **not** survive a round trip.
+
+## Why 0x15 and not 0x25
+
+Apache's translation is driven by `os_toascii[]` / `os_toebcdic[]` (the tables Martin Kraemer added for the z/OS port, historically in `os/os390/ebcdic.c`). They're a modified IBM‑1047 ↔ ISO‑8859‑1 mapping, tuned to the z/OS C runtime — and on z/OS the compiler emits `'\n'` as **`0x15`** (NL), *not* the "true" IBM‑1047 line‑feed `0x25` (LF). So the tables are built so that httpd's internal `'\n'` literals line up with the ASCII wire byte:
+
+| Direction | Byte in | Byte out |
+|---|---|---|
+| ASCII → EBCDIC (`os_toebcdic`) | `0x0A` | `0x15` |
+| EBCDIC → ASCII (`os_toascii`) | `0x15` | `0x0A` |
+| EBCDIC → ASCII (`os_toascii`) | `0x25` | `0x0A` |
+
+## The three answers
+
+1. **ASCII `0x0A` → EBCDIC `0x15`.** (If it mapped to `0x25`, httpd's own `'\n'` comparisons would break, since its `'\n'` is `0x15`.)
+
+2. **Round trip: yes.** `0x15` → `0x0A`. The `0x0A ↔ 0x15` pair is a clean inverse.
+
+3. **EBCDIC `0x25` from elsewhere → `0x0A` as well, and there it stops being reversible.** Both `0x15` and `0x25` fold onto ASCII `0x0A` on the way out, but `0x0A` unfolds only to `0x15` on the way back. So a stray `0x25` gets silently normalized to a newline and, if re‑encoded, comes back as `0x15`, not `0x25`.
+
+The two tables are deliberately **not exact inverses** — the source comment calls this out. The practical consequence: `0x25` (or anything a backend meant as an LF distinct from NL) loses its identity after passing through the ASCII layer. If you care about preserving `0x25` specifically, don't rely on this round trip.
+
+If you want, I can pull the exact table rows from a specific httpd/APR version to confirm the byte values against whatever release you're actually building against.
+########## results/baseline-Q-04-r3.json
+null
+########## results/baseline-Q-05-r1.json
+null
+########## results/baseline-Q-05-r2.json
+null
+########## results/baseline-Q-05-r3.json
+null
+########## results/baseline-Q-06-r1.json
+## What's going on
+
+The vector-table call works fine — control really does land in httpd's copy of the function. What doesn't carry across is the *data anchor* that function uses to find its file-scope static.
+
+libc370 resolves writable statics through a per-C-environment static area, established when a C environment is initialized. httpd built one at startup and set your static in *its* area. When the CGI was entered it initialized a **second** C environment, with a second, freshly-cleared static area. The core function computes the static's address off whichever environment is current at the moment it executes — and when it's reached from the CGI, that's the CGI's environment. So it reads the CGI's zeroed copy, not httpd's initialized one.
+
+The tell is that the static reads back **empty** rather than stale or garbage. Stale would mean you found the wrong instance of live data; garbage would mean a clobbered pointer. Empty means the code correctly located a static area that had simply never been populated — i.e. a *different* one.
+
+The premise to discard is this: same address space guarantees you can *reach* httpd's storage. It says nothing about *which* storage the code computes an address for. Addressability and identity are separate problems here, and only the first one is solved by sharing an address space.
+
+And that's why it fails silently: the function found an empty anchor, concluded there was nothing registered, and took its early-return path. It never got far enough to detect an error, so there's nothing to report.
+
+(The same symptom appears if the CGI was link-edited with its own copy of the core object rather than calling purely through the vector table — automatic call resolving the reference out of the same object library httpd was built from. That's a different route to the identical outcome: two copies of the static in one address space.)
+
+## The fix
+
+**Primary — stop reaching shared state through a file-scope static.** Any core function callable from a foreign C environment must not read its state that way. Add a *data* slot to the vector table alongside the function pointers; httpd stores the address of the state block there at init; the core function takes it as a parameter instead of reading the static:
+
+```c
+struct httpd_vt {
+    int  (*core_fn)(struct httpd_state *st, ...);
+    /* ... */
+    struct httpd_state *state;   /* set by httpd at init */
+};
+```
+
+This is the right answer precisely because it's correct under either diagnosis — a second static area or a second copy of the code both stop mattering once the state travels by address through the table rather than being looked up by name.
+
+**Secondary — check which startfile the CGI was linked with.** libc370 ships distinct startfiles for a main program versus a module LINKed from another C program on the same TCB, and that distinction exists *because* establishing an environment allocates per-module state that a subroutine is supposed to inherit rather than recreate. If the CGI picked up the main-program startfile, it built its own environment where it should have joined httpd's. Correcting the link removes the second static area at the source. (This is the same hazard as Q-07 in your set.)
+
+**Secondary — or anchor the state somewhere environment-independent.** A name/token pair, a field off a TCB/ASCB anchor, or a GETMAINed block in a shared subpool all give you a location that doesn't depend on whose C environment is current. Heavier than the vector-table slot, but appropriate if the state has to be reachable from callers you don't control or that aren't C at all.
+
+I'd do the vector-table slot regardless, and treat the startfile check as a separate bug worth confirming — if it *is* wrong, it's likely causing quieter problems elsewhere in the CGI too.
+########## results/baseline-Q-06-r2.json
+null
+########## results/baseline-Q-06-r3.json
+null
+########## results/baseline-Q-07-r1.json
+null
+########## results/baseline-Q-07-r2.json
+null
+########## results/baseline-Q-07-r3.json
+null
+########## results/baseline-Q-08-r1.json
+null
+########## results/baseline-Q-08-r2.json
+null
+########## results/baseline-Q-08-r3.json
+null
+########## results/baseline-Q-09-r1.json
+null
+########## results/baseline-Q-09-r2.json
+Nothing in the working dir bears on this (just `questions/` and `results/`), so this is a pure diagnosis question. Here's my read.
+
+## First, re-read the fingerprint — two of your clues are weaker than they look
+
+**"R13 and R14 looked sane" is not evidence.** A restored R14 that points into your own module looks perfectly reasonable to a dump reader, but it can easily have come out of the *wrong* save area. If your routine stores registers into the caller's area at `12(13)` and then calls anything else with the same R13, the callee overwrites that area — and the R14 you get back still points somewhere plausible. Don't use "looks sane" to rule out a save-area bug; it's exactly what a save-area bug looks like.
+
+**"R0–R12 full of control blocks" may be unremarkable.** System and LE code carries control-block pointers in R0–R12 as a matter of routine. The question you need to answer from the dump is *where the failing PSW was*, not what the registers held. If the PSW is inside LE (`CEE*`) or the nucleus, then those registers belong to the system routine that died, and the story is **"your code corrupted something and a system routine tripped over it later"** — not "we wild-branched." That's a different bug class and it changes what you go looking for.
+
+What the rotating **S0C1/S0C2/S0C4/S0C6** *does* tell you reliably: something is executing storage that isn't code, and that storage holds different bytes on each run. Timing-dependent variation means the target is being **reused between runs** — freed-and-reallocated storage, or a buffer another thread/service is writing. A single fixed bad branch address would give you a much more repeatable abend code.
+
+## Leading candidate: XPLINK vs. OS linkage mismatch
+
+"Fails only from C, never from assembler" is the classic shape of a linkage-convention mismatch, and it's the one I'd check before anything else.
+
+If the C side is compiled **XPLINK** and your termination routine is OS-linkage assembler without the proper glue, the entry conditions are nothing like what it expects. Under XPLINK, **R13 is not a save-area pointer** — R4 is the stack pointer, the stack grows *upward*, DSA addressing carries a 2048-byte bias, R7 holds the return address and R6 the entry point. Your routine's opening `STM 14,12,12(13)` then writes 72 bytes into whatever R13 happened to contain, silently, and the wreckage surfaces somewhere else entirely. A pure-assembler caller hands it a genuine 72-byte save area, so the bug is completely invisible from your test cases.
+
+Fix is `#pragma linkage(name, OS)` on the C declaration (the compiler generates the stack-swap glue), or compile the calling C with NOXPLINK.
+
+## Then, in order
+
+1. **Save-area ownership.** Under LE non-XPLINK, R13 points at a **DSA**, not a spare scratch area — and DSA+76 is the **NAB**, which LE depends on. If your routine uses the caller's area as its own, or writes past 72 bytes, you smash NAB and the next DSA allocation hands back a pointer into live control blocks. Your assembler drivers give it a private save area nobody else touches, which is why it's clean there.
+
+2. **R12 is the CAA.** Under LE non-XPLINK, R12 must be preserved. Old assembler that does `BALR 12,0` / `USING *,12` destroys it. Harmless in the assembler tests — nobody's looking at R12 — and lethal the instant any LE service or condition handler dereferences it. This also neatly explains your dump: a program check in LE-managed code hands control to LE's condition manager, which needs the CAA; with it trashed, LE's own recovery detonates, and you land in LE code with control blocks in R0–R12.
+
+3. **Storage lifetime.** This is a *termination* routine, so ask directly: does it free the environment block, a subpool, or anything a still-live save area or structure sits in? Free-then-use is the canonical source of timing-dependent rotating 0Cx. Under C, LE's heap manager reuses that storage immediately; in a small assembler test nothing else is allocating, so the freed storage keeps its old contents and the bug never shows. If you're driving IRXINIT/IRXTERM, this one is very live.
+
+4. **AMODE/RMODE**, worth one look but lower odds — it usually gives a repeatable 0C4 rather than a rotating code.
+
+## Checks that actually separate these
+
+- **Compile options and the C prototype.** XPLINK or NOXPLINK? Is there a `#pragma linkage` on the assembler entry? Single fastest discriminator, and it's a five-minute check.
+- **Find the failing PSW, not the registers.** In your module → wild branch. In `CEE*` or the nucleus → downstream corruption. This splits the whole problem in half.
+- **Walk the backchain from R13.** Does it reach the C main coherently? A broken or looping chain is your save-area bug, confirmed.
+- **Compare R12 at entry against the CAA address**, and again at failure.
+- **Poison freed storage.** Run with `STORAGE(00,FE,00)` — heap initialized to X'00', freed storage overwritten with X'FE'. X'FE' isn't a valid opcode, so if it's free-then-use the crash collapses into a *deterministic* S0C1 with an obvious pattern in the dump. `TERMTHDACT(UAALL)` and `TRAP(ON)` will get you the LE traceback alongside it.
+
+I can't name a single cause with confidence without seeing the dump or the source — a register fingerprint alone doesn't determine one. But the XPLINK check is cheap and it's where the "only from C" clue points hardest; if that comes back clean, the poisoned-storage run will tell you within one execution whether you're in category 3.
+########## results/baseline-Q-09-r3.json
+## Most likely cause: R12 is the CAA, not your base register
+
+Under Language Environment standard linkage, a C caller hands control to your routine with:
+
+| Reg | Contents |
+|---|---|
+| R1 | parameter list pointer |
+| **R12** | **CAA (Common Anchor Area)** |
+| R13 | caller's DSA |
+| R14 | return address |
+| R15 | entry point |
+
+R12 is *reserved* — it is not a scratch base register. If your termination routine assumes R12 is its base (an inherited `USING`, or a `USING ...,R12` whose corresponding load doesn't happen on the termination entry path), then every base+displacement reference resolves against the CAA. CAA fields are pointers to other LE control blocks, so your "variables" load as EDB/PPA/heap-anchor/DSA addresses — which is precisely "R0 through R12 full of what looked like system control blocks," with R13 and R14 untouched because LE set those correctly and nothing in your routine disturbed them.
+
+The pure-assembler tests passed by luck: the driver left R12 pointing at a base within the same load module, so the displacements landed on real storage.
+
+## Two deductions that make this identifiable rather than a guess
+
+**R14 being sane rules out the save-area explanations.** A standard epilog is `LM R14,R12,12(R13)` — that restores R14, R15, and R0–R12 from one contiguous 60-byte slot. If R0–R12 came back as control blocks but R14 came back correct, they did not come out of the same stale save area. So this is not a broken save-area chain, not a reclaimed caller DSA, and not a storage overlay through a bad NAB at offset 76 of a hand-built save area. Those would not spare R14 that cleanly.
+
+**S0C2 in the rotation says wild branch, not bad data reference.** A privileged-operation exception means the CPU decoded *data* as an instruction. 0C1/0C2/0C4/0C6 varying by run is a branch into non-code whose target shifts with whatever the CAA happened to contain — not a data addressing problem. The branch target was computed from a register, and you already know which registers were holding control blocks.
+
+## The check that confirms it
+
+Compare the dumped R12 against the CAA address (the CEEDUMP reports it). If they match, your routine is running with no base of its own. Then read the prolog: is R12 established from R15 before the `USING`, on *every* entry path — including the termination path? A routine with multiple entry points where only one sets the base is the classic shape of this bug.
+
+Fix is to pick a base register other than R12 (R11 or R10 is conventional), establish it from R15 at each entry, and save/restore R12 across the routine like any other caller-owned register.
+
+## If R12 turns out not to be the CAA
+
+The next candidate is that the routine isn't being *called* from C at all but *driven* as an exit during enclave termination — an `atexit`/CEE termination exit, ETXR, or a RESMGR resource manager. There the system supplies the entry registers, and R1 is a TCB or resource-manager parameter list rather than the parm list your routine parses. That also explains "only from C": the assembler tests called it directly and never entered that path.
+
+## One thing worth confirming
+
+Is the C side compiled XPLINK or non-XPLINK? The table above is non-XPLINK standard linkage. XPLINK changes the entry register state wholesale, and a standard-linkage assembler routine reached from XPLINK C without correct linkage glue fails in the same symptom class for a different reason. Worth pinning down before you start changing the prolog.
+########## results/baseline-Q-10-r1.json
+## The mid-record cut is the whole diagnosis
+
+Your own observation eliminates most of the field. A dropped record, a bad TTR/note list, an EOM flag set one record too early, broken control-record chaining — every one of those cuts on a **record boundary**. Yours cuts *inside* a record, in both reproductions. So the record structure is fine; one record's byte count isn't.
+
+Two more eliminations from what you already have:
+
+- **S0C1, not S0C4.** An operation exception on X'0000' means the tail was never written into at all. Bad relocation gives you wrong addresses and S0C4/wild branches, not a clean field of zeros. RLD handling is not your problem.
+- **Load point and extent correct** kills the sizing/GETMAIN family.
+
+What's left: the metadata is right and the bytes are short. One text record on DASD is physically shorter than the count its control record advertises. Program Fetch transfers what is actually there, incorrect-length doesn't surface as a 106/806, the rest of the load area keeps its pre-load zeros, and you eventually branch into them.
+
+And this is exactly why AMBLIST looks exculpatory: LISTLOAD formats from the control/ESD/RLD records. It reports the length the module *claims*. It never reconciles that against the physical block lengths. Your two pieces of "the module is full size" evidence are the same piece of evidence, and it's the one that can't see the failure.
+
+## The experiment you've already run — you just need to read it
+
+You have two reproductions with different text-record layouts. That decides between the two remaining causes for free:
+
+- **Per-block clip** (BLKSIZE or track-capacity truncation at write time) predicts the cut at *(bytes in preceding records) + ~16 KB*. In the two-record repro the cut should sit deeper into the module than in the one-record repro, by exactly record 1's length.
+- **Something cumulative** (an accumulator overflow, a fetch-window effect) predicts absolute ~16 KB in both, regardless of how text was split.
+
+Check which one your second repro matches. If it's per-block, you're done diagnosing.
+
+Then, cheapest first:
+
+1. **Measure it.** Read the member with BSAM, RECFM=U, and print each block's returned length; compare each to the count in the preceding control record's CCW. `block length < CCW count` is the smoking gun and localizes the bug to the write path. Quick variant: AMASPZAP VERIFY against the last few bytes of the CSECT — if ZAP can't find them, they aren't in the member.
+2. **Confirm it.** Relink into a library allocated with BLKSIZE=32760 (or half-track). Clean run ⇒ confirmed. Worth checking DS1BLKL on your current target library first; if it's at or under ~16 KB, that's your cut.
+
+## Linker-side causes with this exact signature
+
+- Not capping text record length at `min(library BLKSIZE, device track capacity, 32760)`. If you emit one text record per CSECT and a CSECT outgrows the block size, the write clips. Split into additional control+text record pairs instead.
+- The length passed to WRITE and the length stored in the control-record CCW count coming from **two different variables**. Pure-linker bug, identical symptom, no BLKSIZE involvement.
+- Signed-halfword arithmetic on the count, and the running offset when splitting a CSECT across records.
+
+If the cut turns out to be absolute rather than per-block, page-boundary/IDAW handling is where I'd look next — but check the two-repro offsets before spending time there.
+########## results/baseline-Q-10-r2.json
+null
+########## results/baseline-Q-10-r3.json
+## The one thing the two reproductions prove
+
+The cut is at a **fixed offset from the load point, not at a record boundary**. Same byte offset, different record structure around it — once inside one text record, once inside the second. That exonerates everything you've been checking: record lengths, the CESD, the declared module size, the byte counts in the control records. They're right, which is exactly why AMBLIST is clean. AMBLIST walks records and control information; it never replays the channel program. Your metadata self-check passed because the metadata isn't what's broken.
+
+So stop looking at module contents and look at **whatever describes the transfer in fixed-size units** — the CCW/IDAW chain built to read the text in, not the text itself.
+
+Also worth stating plainly: a chain that ends normally after fewer units than you expected produces no I/O error and no incorrect-length indication. The absence of any message is the expected symptom here, not evidence the load worked.
+
+## The measurement that discriminates
+
+You need the precise cut, not "a little past 16 KB":
+
+1. **Exact offset.** From the dump: last byte matching the module on disk, first byte that doesn't. Compute `load_point + cut_offset` and test that *absolute* address against a 4K boundary (and 2K).
+   - Lands on a page boundary → truncation is page-granular, i.e. in the CCW/IDAW chain. A non-page-aligned load point explains "a little past 16 KB" neatly: partial first page + four full pages puts the cut just past 16384.
+   - Lands on no natural boundary but at the same *relative* offset both times → count/length arithmetic, not page splitting.
+2. **What's past the cut.** Zeros (fresh untouched storage) vs. stale garbage vs. a partial copy of later text. You've been assuming zeros → S0C1; verify it. Stale non-zero data reopens the overlay branch and the whole truncation story is wrong.
+3. **Disk vs. storage past the cut.** If later text is *present* but at the wrong displacement, this isn't a truncation at all — it's a shift, and you have a relocation/displacement bug.
+
+## Candidates, in order
+
+- **Chain too short.** The transfer description covers fewer page-sized units than the text needs — undercounted CCWs/IDAWs, or the chain terminated where it should have continued. Only candidate naturally consistent with a fixed offset across differing record layouts. Put this first.
+- **Count/length arithmetic** somewhere that isn't the byte totals you already validated.
+- **Overlay after load** — only if (2) shows non-zero stale data.
+
+One caveat on the mechanism: the semantics of the CCW-count field in the control record (whether it counts CCWs needed *after* page splitting) is the hinge of the first candidate, and I can't verify it from here. Check it against *MVS Program Management: Advanced Facilities*, load module record formats, before you act on it.
+
+And one question that changes ownership of the bug: **who is doing the fetch — system program fetch, or your own loader?** "Our own linker" plus "installs" is ambiguous, and if you built the fetch path too, the chain-length bug is on your side of the line rather than a case of fetch rejecting what your linker emitted.
