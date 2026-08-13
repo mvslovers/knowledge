@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-07-27
 applies_to: [libc370, ufsd, httpd, mvsmf, nsf370]
 tags: [apf, authorization, svc244, portability]
-related: [CF-2026-001]
+related: [CF-2026-001, ECO-0007]
 ---
 
 ## Context
