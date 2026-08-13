@@ -52,12 +52,20 @@ No `IEAAPFxx` change and no IPL are required.
 ## Consequences
 
 - **The whole ecosystem depends on SVC 244 being present on the target system.**
-  This is why the document is `assumed` rather than `tested`: SVC 244 lies in the
-  user-SVC range, which is installation-defined by definition — there is no "always
-  present" for it in stock MVS 3.8j. Confirmed on MVSCE only. TK4- and TK5 are
-  unverified. The origin is unrecorded; it may be shipped by the distributions, or
-  it may have been installed by us via USERMOD long enough ago that it reads as a
-  system property.
+  SVC 244 lies in the user-SVC range, which is installation-defined by definition —
+  there is no "always present" for it in stock MVS 3.8j. **MVSCE and TK5 are both
+  confirmed; TK4- remains unverified**, which is why this is still `assumed`.
+  On TK5 (`drnmig3a`, 2026-08-13) httpd 4.0.0-dev started and reported
+  `HTTPD011I <name> was APF authorized via SVC 244` — the `unauth_setup()` branch,
+  so the SVC was reached and worked.
+- **The origin differs per distribution, and the SMP inventory does not record it.**
+  On MVSCE the SVC arrives as USERMOD `RAK0001`, applied against `EBB1102`. On TK5
+  `RAK0001` is **absent from the CDS entirely** (`LIST CDS SYSMOD(RAK0001) .` → RC 04)
+  and the SVC still works — so there it comes with the distribution, installed
+  outside SMP. Two consequences: the question "is it shipped or was it installed by
+  us" has both answers depending on the system, and **the SMP inventory can never be
+  used to test for SVC 244**. See `ECO-0007` for why that also rules out naming RAKF
+  as an SMP prerequisite.
 - Nothing currently detects a missing SVC 244 or reports it usefully. On a system
   without it, `clib_apf_setup()` will fail in whatever way an unassigned SVC fails,
   which is a poor first contact with our stack for a community user. The abend that
@@ -72,6 +80,15 @@ No `IEAAPFxx` change and no IPL are required.
 
 ## To promote this to `tested`
 
-Run a program that issues SVC 244 on each target distribution — MVSCE, TK4-, TK5 —
-and record both the success and, where it fails, the exact abend. Then record where
-the SVC comes from.
+Two of three done, both by observing `HTTPD010I`/`HTTPD011I` at startup:
+
+| Distribution | SVC 244 | Origin |
+|---|---|---|
+| MVSCE | works | USERMOD `RAK0001`, applied, FMID `EBB1102` |
+| TK5 | works (`HTTPD011I`, 2026-08-13) | not in the CDS — ships with the distribution |
+| TK4- | **unverified** | unknown |
+
+What remains: **TK4-**, and the abend on a system *without* the SVC. The second is
+the harder one, because we have no such system — it may only ever be observed in a
+community bug report, which is the argument for detecting and naming the condition
+in code rather than waiting for it.

@@ -6,10 +6,12 @@ platform: [mvs38j]
 sources:
   - "GC28-0673-6 — OS/VS System Modification Program (SMP) System Programmer's Guide"
   - "smptest/doc/SMP-COOKBOOK.md — prototype run 2026-08-08 on mvsdev, SYSMOD TSMP100/USMP001"
-  - "smptest/jcl/smpxinl.jcl, smpxrej.jcl — inline-delivery experiment, JOB01066/JOB01067"
+  - "smptest/jcl/smpxinl.jcl, smpxrej.jcl — inline-delivery experiment; mvsdev (MVS/CE) JOB01066/JOB01067, drnmig3a (TK5) JOB00021/JOB00022"
+  - "smptest/jcl/smplist.jcl — LIST syntax probe and SYSMOD inventory, both distributions"
   - "mbt/scripts/mbt/distribution.py, mbt/scripts/mbtdist.py — the generator"
   - "ufsd/project.toml [distribution] — the reference declaration"
 verified_on: 2026-08-13
+verified_platforms: ["MVS/CE (mvsdev)", "TK5 (drnmig3a)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, rexx370, nsf370, mbt]
 tags: [smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation, distribution, xmit]
 related: [ECO-0001]
@@ -66,17 +68,42 @@ LIBRARY=CMDLIB - RETURN CODE=00` — and `SYS2.CMDLIB(SMPTEST)` came back
 **byte-identical** to the host-built module (71 503 bytes). `norent` survived
 because nothing was bound.
 
-**The SYSMOD can travel inline in the install job** (2026-08-13, mvsdev,
-SMP 4 level 04.48, job `SMPXINL`/JOB01066). `//SMPPTFIN DD DATA,DLM=@@`
-received RC 0, and `SYS1.SMPPTS(TXPR100)` came back byte-identical to what was
-sent — including the JCLIN cards starting with `//` and the `/*` card closing
-the inline copy statements.
+**The SYSMOD can travel inline in the install job** — measured on **both
+distributions** (2026-08-13, SMP 4 level 04.48). `//SMPPTFIN DD DATA,DLM=@@`
+received RC 0 on MVS/CE (`mvsdev`, job `SMPXINL`/JOB01066) and on TK5
+(`drnmig3a`, JOB00021), and on MVS/CE `SYS1.SMPPTS(TXPR100)` came back
+byte-identical to what was sent — including the JCLIN cards starting with `//`
+and the `/*` card closing the inline copy statements. Cleaned up by `REJECT`
+on both, verified absent afterwards.
 
-**The MCS limit is column 72**, not 71 (same job). A `++VER` statement whose
-terminating period sat in column 72 parsed correctly.
+**The MCS limit is column 72**, not 71 (same jobs, both distributions). A
+`++VER` statement whose terminating period sat in column 72 parsed correctly.
 
 **The whole generated flow installs** (2026-08-13, a TK5 system): allocate,
 receive both XMITs, RECEIVE/APPLY CHECK/APPLY/ACCEPT, all `COND CODE 0000`.
+
+**`LIST` needs a zone operand.** `LIST SYSMODS .` is SMP/E and gets
+`HMA2033 SYNTAX ERROR`. SMP 4 wants `LIST CDS .` (applied) or `LIST ACDS .`
+(accepted), optionally qualified: `LIST CDS SYSMOD(TUFS120) .`. **RC 04 with
+an empty list means the id is unknown to that zone** — the free-id test we
+previously did not have. A hit prints `TYPE`, `STATUS` (`REC`/`APP`/`ACC`) and
+the owning `FMID`. Unqualified is 116 172 lines on MVS/CE, 87 602 for `ACDS`.
+
+**IBM's function FMIDs on MVS 3.8j are `E??nnnn`.** `EBB1102` is MVS 3.8j
+itself — `TYPE=FUNCTION`, `STATUS=REC ACC RGN` on both distributions —
+alongside `EAS1102`, `EBT1102`, `EDE1102`, `EDM1102`, `EDS1102`, `EJE1103`,
+`EVT0108`, `ETV0108`. The `T???nnn` ids one sees on a running system are
+**USERMODs**, and they are distribution-specific: `TMVS804/816`, `TIST801`,
+`TJES801`, `TNIP800`, `TTSO801` are all applied USERMODs on MVS/CE and are
+**absent from TK5**. Our `T` prefix is therefore correct for the reason of
+avoiding `E??nnnn`, not because it mirrors a sysgen convention — there is no
+such convention.
+
+**RAKF is not a usable prerequisite.** `RAK0001` is an applied USERMOD on
+MVS/CE and **absent from TK5's CDS** (RC 04) — while SVC 244 demonstrably
+works on TK5 (see `ECO-0001`). A `PRE(RAK0001)` would therefore fail an APPLY
+on a system where the facility it stands for is present and working. The SMP
+inventory carries no information about SVC 244 availability.
 
 ## Two corrections to our own earlier notes
 
