@@ -10,7 +10,9 @@ sources:
   - "smptest/jcl/smplist.jcl — LIST syntax probe and SYSMOD inventory, both distributions"
   - "mbt/scripts/mbt/distribution.py, mbt/scripts/mbtdist.py — the generator"
   - "ufsd/project.toml [distribution] — the reference declaration"
-verified_on: 2026-08-13
+  - "mvsdev, 2026-08-14 — TFTP100 removal: JOB01078 RESTORE, JOB01079 REJECT, JOB01080 UCLIN"
+  - "ftpd/doc/uninstall.md, ufsd/docs/uninstall.md — the operator procedure"
+verified_on: 2026-08-14
 verified_platforms: ["MVS/CE (mvsdev)", "TK5 (drnmig3a)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, rexx370, nsf370, mbt]
 tags: [smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation, distribution, xmit]
@@ -133,7 +135,42 @@ inventory carries no information about SVC 244 availability.
   a STEPLIB pointed at it, which a later PTF would then silently bypass.
 - **Accept the FMID once, never the PTFs.** Without an ACCEPT the DLIB stays
   empty, and a `RESTORE` then *deletes* the module instead of reverting it —
-  there is no previous level to return to.
+  there is no previous level to return to. **The price is that the FMID becomes
+  permanent**: see below.
+- **An accepted function SYSMOD cannot be removed by `RESTORE` or `REJECT`, only
+  by `UCLIN`** (2026-08-14, `mvsdev`, `TFTP100`). The two documented routes
+  close each other off:
+
+  ```
+  HMA2452 ** SYSMOD TFTP100 SELECTED FOR RESTORE HAS BEEN ACCEPTED    RC 12
+  HMA2462 ** SYSMOD TFTP100 NOT FOUND ON SMPPTS LIBRARY               RC 12
+  ```
+
+  `RESTORE` refuses because the SYSMOD was accepted. `REJECT` then fails for a
+  reason that looks unrelated: the `ACCEPT` **removes the MCS from
+  `SYS1.SMPPTS`**, and `REJECT` works from that member — verified directly, the
+  PTS holds 3091 members and `TFTP100` is not among them. `UCLIN` on both zones
+  works and is the only way:
+
+  ```
+   UCLIN CDS .                       (and the same block for ACDS)
+    DEL SYSMOD(TFTP100) MOD(FTPD) .
+    DEL MOD(FTPD) .
+    DEL LMOD(FTPD) .
+    DEL SYSMOD(TFTP100) .
+   ENDUCL .
+  ```
+
+  Every `DEL` answers `HMA2550 UPDATE COMPLETE`, both blocks end RC 00, and a
+  following `LIST` reports the id unknown to both zones. `UCLIN` edits the
+  inventory only — the target and distribution libraries keep their members and
+  must be scratched separately before a re-install. Documented for operators in
+  each product's `uninstall.md`.
+- **This makes "a new minor is a clean cut (RESTORE + REJECT the old)" wrong as
+  written** — that is how the ecosystem registry describes a minor bump, and it
+  cannot work for a shipped `accept_fmid = true` package. Either the uninstall
+  goes through `UCLIN`, or the accept default is reconsidered. Raised for
+  discussion as an mbt ticket.
 - **A ddname says nothing about the dataset behind it.** SMP reports
   `LIBRARY=LINKLIB` whether the override took effect or not, so a DD-override
   mistake is invisible in the log. Every DD that *overrides* one the procedure
@@ -141,10 +178,13 @@ inventory carries no information about SVC 244 availability.
   with `HMASMP.`; in the wrong order both datasets are allocated and SMP uses
   the procedure's.
 - **FMIDs are spent once.** The live registry is the ecosystem `CLAUDE.md`
-  (§ SMP4 FMIDs). A test install must use a throwaway id: a half-applied FMID
-  leaves the real one occupied, and the CDS cannot be queried to find out —
-  its member names are hashes. The SMPPTS *can* be listed, because MCS entry
-  names are the documented exception.
+  (§ SMP4 FMIDs). A test install should still use a throwaway id, though the
+  `UCLIN` route above means an id occupied by a half-applied SYSMOD is now
+  recoverable rather than lost. What has not changed is that you cannot find
+  out by asking: the CDS stores hashed member names, and `LIST CDS SYSMOD(x)`
+  is the only reliable probe. The SMPPTS *can* be listed, because MCS entry
+  names are the documented exception — but after an ACCEPT the member is gone,
+  so its absence proves nothing about whether the id is free.
 - Authorization is orthogonal and remains the weak point: an install can
   complete cleanly and the product still not start. See `ECO-0001`.
 
@@ -157,4 +197,6 @@ inventory carries no information about SVC 244 availability.
   "the third silently overwrites the second SYSLIB sub-entry"; not observed.
   No product needs it yet.
 - Whether DDDEF entries via UCLIN work in SMP 4, which would replace the DD
-  overrides and remove the ordering trap above.
+  overrides and remove the ordering trap above. `UCLIN` itself is now known to
+  work for zone entries (`DEL SYSMOD/MOD/LMOD`, RC 00), so what is untested is
+  the DDDEF entry type, not the mechanism.
