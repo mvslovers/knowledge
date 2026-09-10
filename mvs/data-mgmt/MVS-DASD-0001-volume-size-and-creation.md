@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-09-10
 applies_to: [mvs38src, mvsmf]
 tags: [dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390, 3380, vsam, catalog, track-address, hercules, geometry, space]
-related: [PM-2026-003]
+related: [PM-2026-003, MVS-JCL-0001]
 ---
 
 ## The limit
