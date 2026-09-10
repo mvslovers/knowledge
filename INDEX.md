@@ -5,7 +5,7 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-13 documents.
+16 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
@@ -14,9 +14,12 @@ open exactly that document — not the directory.
 | `ECO-0005` | MVS/XA-and-later services that MVS 3.8j does not have | `myth` | mvs38j | mvs38j, macros, sys1-maclib, anachronism, srb, schedule, getmain, pc | `ecosystem/ECO-0005-no-mvsxa-services.md` |
 | `CF-2026-001` | Does any AC(1) setting in our builds actually carry load? | `disputed` | mvs38j | apf, authorization, svc244, ac1 | `conflicts/CF-2026-001-ac1-vs-self-authorization.md` |
 | `ECO-0007` | Installing our products through SMP 4 — SMP copies host-bound load modules, it does not re-bind them | `tested` | mvs38j | smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation | `ecosystem/ECO-0007-smp4-product-delivery.md` |
+| `ECO-0008` | RAKF gives every started task the same identity, and grants ALTER to everything it does not know | `tested` | mvs38j | rakf, racf, security, authorization, acee, racinit, stc, identity | `ecosystem/ECO-0008-rakf-stc-identity-and-authorization.md` |
+| `MVS-DASD-0001` | DASD volume size limit and volume creation under Hercules — 32,767 tracks, and dasdinit alone is not enough | `tested` | mvs38j | dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390 | `mvs/data-mgmt/MVS-DASD-0001-volume-size-and-creation.md` |
 | `MVS-SSI-0001` | Dynamic SSI registration — and why a second START says IEF612I PROCEDURE NOT FOUND | `tested` | mvs38j | ssi, ssct, ssvt, jesct, iefssreq, ief612i, stc, start | `mvs/subsystem/MVS-SSI-0001-dynamic-registration-double-start.md` |
 | `PM-2026-001` | IRXTERM crashes only when called from a C host — as370 assembles RS-format D(,B) with base 0 | `tested` | mvs38j | as370, hlasm, rs-format, lm, stm, psa, low-core, s0c1 | `postmortems/PM-2026-001-irxterm-c-host-crash.md` |
 | `PM-2026-002` | Load module truncates past 16 KB — ld370's TXT-card reader silently dropped text, it was never FETCH | `tested` | mvs38j | ld370, linker, load-module, txt-card, s0c1, s106, iewfetch, amblist | `postmortems/PM-2026-002-ld370-text-truncation.md` |
+| `PM-2026-003` | A hundred source members went unreadable — the volume was full, and every reader reported it differently | `tested` | mvs38j | dasd, space, d37, iec031i, mvsmf, ftp, iehlist, silent-truncation | `postmortems/PM-2026-003-full-volume-silent-truncation.md` |
 | `ECO-0004` | Cross-address-space POST and WAIT on MVS 3.8j | `source` | mvs38j | post, wait, ecb, cross-address-space, ssi, cvt0pt01, xmpost, storage-key | `ecosystem/ECO-0004-cross-as-post-wait.md` |
 | `ECO-0006` | A server module runs under its own GRT — httpd's core statics are invisible from it | `source` | mvs38j | grt, wsa, writable-static, module, link-svc, crt1, crtm, grtapp1 | `ecosystem/ECO-0006-module-grt-isolation.md` |
 | `MVS-ENC-0001` | httpd's three ASCII/EBCDIC translation table pairs — CP037, IBM1047, LEGACY | `source` | mvs38j | encoding, ebcdic, ascii, codepage, cp037, ibm1047, legacy, brackets | `mvs/encoding/MVS-ENC-0001-httpd-translation-tables.md` |
@@ -27,7 +30,7 @@ open exactly that document — not the directory.
 
 - **myth** (3): `ECO-0002`, `ECO-0003`, `ECO-0005`
 - **disputed** (1): `CF-2026-001`
-- **tested** (4): `ECO-0007`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`
+- **tested** (7): `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
 - **assumed** (1): `ECO-0001`
 
@@ -40,13 +43,14 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 ## By project
 
 - **cc370**: `ECO-0003`, `PM-2026-001`, `PM-2026-002`
-- **ftpd**: `ECO-0007`
-- **httpd**: `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `MVS-ENC-0001`, `PM-2026-002`
+- **ftpd**: `ECO-0007`, `ECO-0008`
+- **httpd**: `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-ENC-0001`, `PM-2026-002`
 - **httplua**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`
 - **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `PM-2026-001`
-- **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
+- **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
 - **mbt**: `ECO-0007`
-- **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `MVS-ENC-0001`, `MVS-SSI-0001`, `UFSD-ADR-0001`
+- **mvs38src**: `MVS-DASD-0001`, `PM-2026-003`
+- **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
 - **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
 - **rexx370**: `ECO-0003`, `ECO-0005`, `ECO-0007`, `PM-2026-001`, `PM-2026-002`
 - **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`, `UFSD-ADR-0001`
