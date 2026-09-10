@@ -6,10 +6,10 @@ platform: [mvs38j]
 sources:
   - "Jay Moseley, 'Modern DASD' — https://www.jaymoseley.com/hercules/installMVS/modernDASD/modernDASD.htm"
   - "Jay Moseley, 'Adding DASD Volumes' — https://www.jaymoseley.com/hercules/installMVS/addingDasdV8.htm"
-  - "Observed on MVSTK5-BLD (TK5 under Hercules 4.10.0), 2026-09-10: IEF193I on a 3390-3, successful allocation on a dasdload 3390-2"
+  - "Observed on MVSTK5-BLD (TK5 under Hercules 4.10.0), 2026-09-10: IEF193I on a 3390-3, successful allocation on a dasdload 3390-2, no VSAM object on any build volume"
 verified_on: 2026-09-10
 applies_to: [mvs38src, mvsmf]
-tags: [dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390, track-address, hercules, geometry, space]
+tags: [dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390, 3380, vsam, catalog, track-address, hercules, geometry, space]
 related: [PM-2026-003]
 ---
 
@@ -39,12 +39,33 @@ IEF193I <job> <step> <ddname> - SPACE NOT OBTAINED BECAUSE OF PERMANENT I/O ERRO
 
 which reads like a broken image rather than an unsupported geometry. `[tested]`
 
-**The 3390-2 caveat.** Jay reports that models above 3390-1 "require User
-Modification by Jim Morrison/Rob Prins and work only for specific dataset types,
-not VSAM catalogs." On TK5 a `dasdload`-created 2,184-cylinder 3390-2 took
-ordinary PDS and PS allocations without complaint `[tested]`; **VSAM catalogs on
-such a volume are untested here** and Jay's warning stands until someone
-measures it.
+## What an oversized volume can and cannot hold
+
+Staying under 32,767 tracks is necessary but not sufficient. A volume larger
+than 3390-1 needs the Morrison/Prins User Modification, and even with it only
+some dataset types work. Jay measured each type on a 2,184-cylinder 3390-2
+`[source: Jay Moseley, Modern DASD]`:
+
+| Dataset type | Result |
+|---|---|
+| Physical sequential | works |
+| Partitioned | works |
+| VSAM Dataspace | works |
+| VSAM object, `UNIQUE` or suballocated from a Dataspace | works |
+| **VSAM User Catalog** | **MVS locks up completely, re-IPL required** |
+
+The catalog case is not a rejected allocation. The job starts, and the system
+stops — no message, no abend, nothing to diagnose. The same happened on a
+3380-3, and even a standard 3380-2 failed; 3390-1, 3380-1 and 3375 were fine.
+
+Nothing you can do to a running MVS makes this recoverable, so the rule is
+preventive: **never define a VSAM catalog on a volume larger than 3390-1.**
+
+On MVSTK5-BLD the twelve 2,184-cylinder 3390-2 build volumes carry 199
+partitioned, 6 sequential and 8 unopened FB datasets and no VSAM object at all
+`[tested]`. Dave's SMP chain defines VSAM exactly once — `ZSTAGE1O` puts a
+Dataspace and the cluster `SYS1.STGINDEX` on `MVSRES`, a standard 3390-1 — so
+the build never touches the failing case.
 
 ## Creating a volume MVS will accept
 
