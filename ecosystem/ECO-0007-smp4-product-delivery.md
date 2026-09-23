@@ -16,7 +16,7 @@ verified_on: 2026-08-14
 verified_platforms: ["MVS/CE (mvsdev)", "TK5 (drnmig3a)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, rexx370, nsf370, mbt]
 tags: [smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation, distribution, xmit]
-related: [ECO-0001]
+related: [ECO-0001, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003]
 ---
 
 ## Context
@@ -88,7 +88,9 @@ receive both XMITs, RECEIVE/APPLY CHECK/APPLY/ACCEPT, all `COND CODE 0000`.
 `HMA2033 SYNTAX ERROR`. SMP 4 wants `LIST CDS .` (applied) or `LIST ACDS .`
 (accepted), optionally qualified: `LIST CDS SYSMOD(TUFS120) .`. **RC 04 with
 an empty list means the id is unknown to that zone** — the free-id test we
-previously did not have. A hit prints `TYPE`, `STATUS` (`REC`/`APP`/`ACC`) and
+previously did not have. *Unknown to the zone is not the same as not received:
+a SYSMOD creates its zone entry at APPLY, not at RECEIVE — see `MVS-SMP-0002`.*
+A hit prints `TYPE`, `STATUS` (`REC`/`APP`/`ACC`) and
 the owning `FMID`. Unqualified is 116 172 lines on MVS/CE, 87 602 for `ACDS`.
 
 **IBM's function FMIDs on MVS 3.8j are `E??nnnn`.** `EBB1102` is MVS 3.8j
@@ -190,9 +192,11 @@ inventory carries no information about SVC 244 availability.
 
 ## Open
 
-- Whether `REQ()`/`PRE()` is checked against the CDS (applied) or the ACDS
-  (accepted). With the FMID accepted and service never accepted, both would
-  find it — untested, and it first matters for the ufsd → httpd chain.
+- ~~Whether `REQ()`/`PRE()` is checked against the CDS (applied) or the ACDS
+  (accepted).~~ **Answered 2026-09-23: each function checks the zone it writes.
+  `APPLY` resolves against the CDS, `ACCEPT` against the ACDS.** See
+  `MVS-SMP-0001`. For the ufsd → httpd chain: a prerequisite that is applied but
+  not accepted satisfies an APPLY and blocks every ACCEPT naming it.
 - The behaviour of three target libraries fed from one DLIB. Documented as
   "the third silently overwrites the second SYSLIB sub-entry"; not observed.
   No product needs it yet.

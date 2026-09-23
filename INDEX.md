@@ -5,18 +5,21 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-17 documents.
+20 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
 | `ECO-0002` | HTTPD is not Apache HTTP Server and not IBM HTTP Server | `myth` | mvs38j | httpd, apache, ihs, provenance, encoding, codepage, model-priors, myth | `ecosystem/ECO-0002-httpd-is-not-apache.md` |
 | `ECO-0003` | The libc370 runtime model — and why it is not Language Environment | `myth` | mvs38j | libc370, runtime, startup, crt0, crt1, crtm, clibcrt, clibgrt | `ecosystem/ECO-0003-libc370-runtime-not-le.md` |
 | `ECO-0005` | MVS/XA-and-later services that MVS 3.8j does not have | `myth` | mvs38j | mvs38j, macros, sys1-maclib, anachronism, srb, schedule, getmain, pc | `ecosystem/ECO-0005-no-mvsxa-services.md` |
+| `MVS-SMP-0003` | RMID is not the SYSMOD that installed the element, and RMID numbers are not ordered | `myth` | mvs38j | smp, smp4, rmid, fmid, sysmod, hma2380, hma4090, supersede | `mvs/tooling/MVS-SMP-0003-rmid-is-not-the-installing-sysmod.md` |
 | `CF-2026-001` | Does any AC(1) setting in our builds actually carry load? | `disputed` | mvs38j | apf, authorization, svc244, ac1 | `conflicts/CF-2026-001-ac1-vs-self-authorization.md` |
 | `ECO-0007` | Installing our products through SMP 4 — SMP copies host-bound load modules, it does not re-bind them | `tested` | mvs38j | smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation | `ecosystem/ECO-0007-smp4-product-delivery.md` |
 | `ECO-0008` | RAKF gives every started task the same identity, and grants ALTER to everything it does not know | `tested` | mvs38j | rakf, racf, security, authorization, acee, racinit, stc, identity | `ecosystem/ECO-0008-rakf-stc-identity-and-authorization.md` |
 | `MVS-DASD-0001` | DASD volume size limit and volume creation under Hercules — 32,767 tracks, and dasdinit alone is not enough | `tested` | mvs38j | dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390 | `mvs/data-mgmt/MVS-DASD-0001-volume-size-and-creation.md` |
 | `MVS-JCL-0001` | A concatenation takes its DCB from the first dataset — a later library with larger blocks gives WRNG.LEN.RECORD | `tested` | mvs38j | jcl, dcb, blksize, concatenation, syslib, bsam, ifo261, wrng-len-record | `mvs/jcl/MVS-JCL-0001-concatenation-blocksize.md` |
+| `MVS-SMP-0001` | APPLY checks requisites against the CDS, ACCEPT against the ACDS — a PTF applied but never accepted blocks every later ACCEPT | `tested` | mvs38j | smp, smp4, apply, accept, requisite, pre, req, cds | `mvs/tooling/MVS-SMP-0001-requisite-zone.md` |
+| `MVS-SMP-0002` | A received SYSMOD is unknown to LIST CDS — SMP 4 keeps the receive state in SMPPTS, not in the zone | `tested` | mvs38j | smp, smp4, receive, smpptfin, smppts, cds, acds, sysmod | `mvs/tooling/MVS-SMP-0002-receive-state-not-in-zone.md` |
 | `MVS-SSI-0001` | Dynamic SSI registration — and why a second START says IEF612I PROCEDURE NOT FOUND | `tested` | mvs38j | ssi, ssct, ssvt, jesct, iefssreq, ief612i, stc, start | `mvs/subsystem/MVS-SSI-0001-dynamic-registration-double-start.md` |
 | `PM-2026-001` | IRXTERM crashes only when called from a C host — as370 assembles RS-format D(,B) with base 0 | `tested` | mvs38j | as370, hlasm, rs-format, lm, stm, psa, low-core, s0c1 | `postmortems/PM-2026-001-irxterm-c-host-crash.md` |
 | `PM-2026-002` | Load module truncates past 16 KB — ld370's TXT-card reader silently dropped text, it was never FETCH | `tested` | mvs38j | ld370, linker, load-module, txt-card, s0c1, s106, iewfetch, amblist | `postmortems/PM-2026-002-ld370-text-truncation.md` |
@@ -29,9 +32,9 @@ open exactly that document — not the directory.
 
 ## By status
 
-- **myth** (3): `ECO-0002`, `ECO-0003`, `ECO-0005`
+- **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
 - **disputed** (1): `CF-2026-001`
-- **tested** (8): `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`
+- **tested** (10): `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
 - **assumed** (1): `ECO-0001`
 
@@ -44,14 +47,14 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 ## By project
 
 - **cc370**: `ECO-0003`, `PM-2026-001`, `PM-2026-002`
-- **ftpd**: `ECO-0007`, `ECO-0008`
-- **httpd**: `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-ENC-0001`, `PM-2026-002`
+- **ftpd**: `ECO-0007`, `ECO-0008`, `MVS-SMP-0001`, `MVS-SMP-0002`
+- **httpd**: `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-ENC-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `PM-2026-002`
 - **httplua**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`
 - **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `PM-2026-001`
 - **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
-- **mbt**: `ECO-0007`
-- **mvs38src**: `MVS-DASD-0001`, `MVS-JCL-0001`, `PM-2026-003`
-- **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
+- **mbt**: `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`
+- **mvs38src**: `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `PM-2026-003`
+- **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-SMP-0003`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
 - **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
 - **rexx370**: `ECO-0003`, `ECO-0005`, `ECO-0007`, `PM-2026-001`, `PM-2026-002`
-- **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`, `UFSD-ADR-0001`
+- **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `UFSD-ADR-0001`
