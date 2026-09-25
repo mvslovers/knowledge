@@ -5,11 +5,41 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-09-25 | MVS/CE LAB JOB01201 (KBBLDL: six BLDL forms, IFOX00 listing); SYS1.LINKLIB / SYS1.LPALIB member lists; `IGC018` `CLRENT` / `LIB` | none | `MVS-BLDL-0001` (→ `tested`; root cause narrowed to `(1)`; DCB=0 search order corrected; LPA not searched; R/Z byte reading; control probe rewritten), `CF-2026-002` + `CF-2026-003` (closed, outcome B); `tools/kb-lint.py` (CF warning only for open conflicts) | `CF-2026-002`, `CF-2026-003` closed |
 | 2026-09-25 | KB consistency pass — `tools/kb-index.py`, `tools/kb-lint.py`, `IHBINNRA` / `BLDL` macro source, `IGC018` (SVC 18) | `CF-2026-002`, `CF-2026-003`; `tools/kb-lint.py` | `MVS-BLDL-0001` (→ `disputed`; `applies_to` free-text entry dropped), `ECO-0001` (→ `disputed`; `related:` reciprocates `ECO-0008`), `ECO-0007` (`related:` reciprocates `ECO-0008`); `CLAUDE.md` §3 layout gains `mvs/jcl/` | `CF-2026-002`, `CF-2026-003` |
 | 2026-09-24 | rexx370 session — WP-33-TSO on MVSCE-LAB (JOB01181, JOB01185, JOB01189, JOB01192, s3270 foreground run); IKT0009C, IKJEFT01 sources | `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-004` | none | none |
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-09-25 — BLDL conflicts settled on MVS/CE LAB
+
+One batch job, JOB01201 (`KBBLDL`), assembled a probe with IFOX00, linked it
+into `&&LOAD` and ran six steps, one BLDL form each. Evidence is the WTO
+output (return code plus 12 raw bytes of each entry), quoted in both CF
+documents together with the macro expansions from the listing.
+
+- **`CF-2026-002` closed, B:** only `BLDL 0,(1)` fails. `(0)`, `(2)` and the
+  symbolic form produce identical entries.
+- **`CF-2026-003` closed, B:** DCB=0 found a module that existed only in
+  `//STEPLIB` (Z=`02`); an explicit `CVTLINK` DCB did not.
+- **New, not asked for:** `IKJEFT01` is in `SYS1.LPALIB` on MVS/CE, and BLDL
+  does not search the LPA. So the control probe as written in
+  `MVS-BLDL-0001` (IEFBR14 + IKJEFT01, checked by R15) returns RC=4 even for
+  a correct list. Rewritten to check `IEFBR14`'s R byte.
+- **A trap in my own probe:** the step condition codes claimed "both
+  entries found" for lists where the second was not. SVC 18 zeroes the R
+  byte of every entry before it searches (`IGC018` `CLRENT`), which defeated
+  the "TTR still `FFFFFF`" test. The raw bytes caught it. The fact is
+  recorded in `MVS-BLDL-0001`.
+
+Convention used for a closed conflict: the CF document takes the status of
+its evidence (`tested`), gets a *Resolution* section, and keeps its links.
+`kb-lint.py` now warns only about documents linked to an *open* CF.
+
+Outside the KB, not edited: `rexx370/src_ptf/TODO_IKJEFT01.md` (Offen,
+item 3) and the comment on `IKJEFTRX.ASM:82` still give "link library only"
+as the reason.
 
 ## 2026-09-25 — consistency pass
 

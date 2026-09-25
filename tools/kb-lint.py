@@ -18,8 +18,9 @@ Errors:
 Warnings:
   - status assumed (actively needs validation, §6)
   - status tested with verified_on older than twelve months (§10)
-  - linked to a CF- document without being disputed itself (§9: a conflict is
-    marked everywhere it appears)
+  - linked to an open CF- document (one still disputed) without being disputed
+    itself (§9: a conflict is marked everywhere it appears). A closed conflict
+    records its outcome and keeps its status from the evidence, e.g. tested.
 
 The front matter parser is kb-index.py's, so both tools read the same thing.
 
@@ -104,8 +105,9 @@ def lint(root, today):
         cf_links = [r for r in related if r.startswith("CF-")]
         if status == "disputed" and not is_cf and not any(r in by_id for r in cf_links):
             errors.append(f"{path}: disputed without an existing CF- document in related:")
-        if cf_links and status != "disputed" and not is_cf:
-            warnings.append(f"{path}: linked to {', '.join(cf_links)} but status is "
+        open_cfs = [r for r in cf_links if by_id.get(r, {}).get("status") == "disputed"]
+        if open_cfs and status != "disputed" and not is_cf:
+            warnings.append(f"{path}: linked to open {', '.join(open_cfs)} but status is "
                             f"{status}, not disputed")
         if status == "assumed":
             warnings.append(f"{path}: status assumed — needs validation")

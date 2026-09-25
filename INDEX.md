@@ -14,12 +14,12 @@ open exactly that document — not the directory.
 | `ECO-0005` | MVS/XA-and-later services that MVS 3.8j does not have | `myth` | mvs38j | mvs38j, macros, sys1-maclib, anachronism, srb, schedule, getmain, pc | `ecosystem/ECO-0005-no-mvsxa-services.md` |
 | `MVS-SMP-0003` | RMID is not the SYSMOD that installed the element, and RMID numbers are not ordered | `myth` | mvs38j | smp, smp4, rmid, fmid, sysmod, hma2380, hma4090, supersede | `mvs/tooling/MVS-SMP-0003-rmid-is-not-the-installing-sysmod.md` |
 | `CF-2026-001` | Does any AC(1) setting in our builds actually carry load? | `disputed` | mvs38j | apf, authorization, svc244, ac1 | `conflicts/CF-2026-001-ac1-vs-self-authorization.md` |
-| `CF-2026-002` | Does BLDL fail for every register-form list operand, or only for (1)? | `disputed` | mvs38j | bldl, ihbinnra, macro, register-notation, svc18 | `conflicts/CF-2026-002-bldl-register-form.md` |
-| `CF-2026-003` | Does BLDL with DCB=0 search the caller's JOBLIB/STEPLIB, or only the link library? | `disputed` | mvs38j | bldl, svc18, igc018, joblib, steplib, tasklib, linklib, tcbjlb | `conflicts/CF-2026-003-bldl-dcb0-search-order.md` |
 | `ECO-0001` | Runtime self-authorization instead of APF library authorization | `disputed` | mvs38j | apf, authorization, svc244, portability | `ecosystem/ECO-0001-runtime-self-authorization.md` |
-| `MVS-BLDL-0001` | BLDL returns RC=4 for modules that are certainly there — the list must be passed symbolically, not in a register | `disputed` | mvs38j | bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra | `mvs/data-mgmt/MVS-BLDL-0001-bldl-list-form-and-entry-length.md` |
+| `CF-2026-002` | Does BLDL fail for every register-form list operand, or only for (1)? | `tested` | mvs38j | bldl, ihbinnra, macro, register-notation, svc18 | `conflicts/CF-2026-002-bldl-register-form.md` |
+| `CF-2026-003` | Does BLDL with DCB=0 search the caller's JOBLIB/STEPLIB, or only the link library? | `tested` | mvs38j | bldl, svc18, igc018, joblib, steplib, tasklib, linklib, tcbjlb | `conflicts/CF-2026-003-bldl-dcb0-search-order.md` |
 | `ECO-0007` | Installing our products through SMP 4 — SMP copies host-bound load modules, it does not re-bind them | `tested` | mvs38j | smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation | `ecosystem/ECO-0007-smp4-product-delivery.md` |
 | `ECO-0008` | RAKF gives every started task the same identity, and grants ALTER to everything it does not know | `tested` | mvs38j | rakf, racf, security, authorization, acee, racinit, stc, identity | `ecosystem/ECO-0008-rakf-stc-identity-and-authorization.md` |
+| `MVS-BLDL-0001` | BLDL returns RC=4 for modules that are certainly there — BLDL 0,(1) loses the list address | `tested` | mvs38j | bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra | `mvs/data-mgmt/MVS-BLDL-0001-bldl-list-form-and-entry-length.md` |
 | `MVS-DASD-0001` | DASD volume size limit and volume creation under Hercules — 32,767 tracks, and dasdinit alone is not enough | `tested` | mvs38j | dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390 | `mvs/data-mgmt/MVS-DASD-0001-volume-size-and-creation.md` |
 | `MVS-JCL-0001` | A concatenation takes its DCB from the first dataset — a later library with larger blocks gives WRNG.LEN.RECORD | `tested` | mvs38j | jcl, dcb, blksize, concatenation, syslib, bsam, ifo261, wrng-len-record | `mvs/jcl/MVS-JCL-0001-concatenation-blocksize.md` |
 | `MVS-SMP-0001` | APPLY checks requisites against the CDS, ACCEPT against the ACDS — a PTF applied but never accepted blocks every later ACCEPT | `tested` | mvs38j | smp, smp4, apply, accept, requisite, pre, req, cds | `mvs/tooling/MVS-SMP-0001-requisite-zone.md` |
@@ -39,8 +39,8 @@ open exactly that document — not the directory.
 ## By status
 
 - **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
-- **disputed** (5): `CF-2026-001`, `CF-2026-002`, `CF-2026-003`, `ECO-0001`, `MVS-BLDL-0001`
-- **tested** (13): `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
+- **disputed** (2): `CF-2026-001`, `ECO-0001`
+- **tested** (16): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
 
 ## Reference material (`sources/`)

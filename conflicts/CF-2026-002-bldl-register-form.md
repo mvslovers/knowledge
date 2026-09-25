@@ -1,12 +1,13 @@
 ---
 id: CF-2026-002
 title: Does BLDL fail for every register-form list operand, or only for (1)?
-status: disputed
+status: tested
 platform: [mvs38j]
 sources:
   - "MVS-BLDL-0001 — the measured RC=4 with LA R1,list / BLDL 0,(1)"
   - "mvs38-ibmsrc/macros/maclib/BLDL.asm, seq. 00100000 — &NAME IHBINNRA &DCB,&LIST"
   - "mvs38-ibmsrc/macros/maclib/IHBINNRA.asm — labels .NOPT, .CHKB, .REGB"
+  - "MVS/CE LAB (mvsdev.lan:8082), JOB01201 KBBLDL — 2026-09-25, IFOX00 listing and WTO output"
 verified_on: 2026-09-25
 applies_to: [rexx370, mvs38src]
 tags: [bldl, ihbinnra, macro, register-notation, svc18]
@@ -61,7 +62,58 @@ One job, in the same harness as JOB01125ff: the control probe from
 B predicts RC=0, RC=0, RC=4. Keep the assembler listing so the expansion is on
 record next to the return codes.
 
+## Resolution — position B
+
+Settled by experiment on MVS/CE LAB, JOB01201, 2026-09-25. **Only `(1)`
+fails.** Steps A (symbolic), C (`(2)`) and D (`(0)`) produced byte-identical
+entries: `IEFBR14` found in the link library. Step B (`(1)`) left the list
+untouched.
+
+The listing (IFOX00, `SYSLIB SYS1.MACLIB`) shows the expansion predicted
+above:
+
+```
+DOB      LA    1,LIST1
+         LA    1,0                  LOAD PARAMETER REG 1
+         LR    0,1                  LOAD PARAMETER REG 0
+         LA    1,0(1)               CLEAR HIGH ORDER BYTE ZA00734
+         SVC   18
+DOC      LA    2,LIST1
+         LA    1,0                  LOAD PARAMETER REG 1
+         LR    0,2                  LOAD PARAMETER REG 0
+         LA    1,0(1)               CLEAR HIGH ORDER BYTE ZA00734
+         SVC   18
+DOD      LA    0,LIST1
+         LA    1,0                  LOAD PARAMETER REG 1
+         LA    1,0(1)               CLEAR HIGH ORDER BYTE ZA00734
+         SVC   18
+```
+
+Output:
+
+```
++KBBLDLT1 A RC=00000004 1=01261600012C012704000000 2=FFFF00FFFFFFFFFFFFFFFFFF
++KBBLDLT1 C RC=00000004 1=01261600012C012704000000 2=FFFF00FFFFFFFFFFFFFFFFFF
++KBBLDLT1 D RC=00000004 1=01261600012C012704000000 2=FFFF00FFFFFFFFFFFFFFFFFF
++KBBLDLT1 E RC=00000000 1=01261600012C012704000000 2=00000400022C000009000000
++KBBLDLT1 F RC=00000004 1=01261600012C012704000000 2=FFFF00FFFFFFFFFFFFFFFFFF
++KBBLDLT1 B RC=00000004 1=FFFFFFFFFFFFFFFFFFFFFFFF 2=FFFFFFFFFFFFFFFFFFFFFFFF
+```
+
+Each line is the BLDL return code and 12 bytes of each entry from the TTR on
+(TT R K Z C …). Entries were prefilled with `X'FF'`. `LIST1` = `IEFBR14`,
+`IKJEFT01`; `LIST2` = `IEFBR14`, `KBBLDLT1`, `LL=58`. `KBBLDLT1` is the probe
+itself, linked into `&&LOAD` and run from `//STEPLIB DD DSN=&&LOAD`.
+
+The job's step condition codes (0411, 0011, 0400) encoded "entry found" as
+"TTR no longer `FFFFFF`". That test is wrong — SVC 18 zeroes R in every
+entry — so the codes are not evidence. The hex above is.
+
+The prediction "RC=0, RC=0, RC=4" did not hold for R15 — every step using
+`LIST1` returned RC=4. That was not the question being tested: `IKJEFT01` is
+in `SYS1.LPALIB` on MVS/CE and BLDL does not search the LPA (see
+`MVS-BLDL-0001`). The per-entry bytes answer the question.
+
 ## Status
 
-Open, raised 2026-09-25 during a KB consistency pass. Until it is settled, the
-symbolic form stays the safe advice either way.
+Closed 2026-09-25 by JOB01201. Outcome B; `MVS-BLDL-0001` corrected.
