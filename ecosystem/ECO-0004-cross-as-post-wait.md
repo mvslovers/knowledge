@@ -13,7 +13,7 @@ sources:
 verified_on: 2026-08-01
 applies_to: [ufsd, libc370, nsf370, mvsmf]
 tags: [post, wait, ecb, cross-address-space, ssi, cvt0pt01, xmpost, storage-key, s102, s202, x201, s047]
-related: [ECO-0005]
+related: [ECO-0005, MVS-SSI-0001, UFSD-ADR-0001]
 ---
 
 ## The rule

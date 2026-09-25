@@ -13,7 +13,7 @@ sources:
 verified_on: 2026-08-01
 applies_to: [libc370, cc370, rexx370, httpd, httprexx, httplua, ufsd, nsf370]
 tags: [libc370, runtime, startup, crt0, crt1, crtm, clibcrt, clibgrt, clibppa, linkage, save-area, language-environment, model-priors, myth]
-related: [ECO-0002]
+related: [ECO-0002, ECO-0006, PM-2026-001]
 ---
 
 ## Why this document exists
@@ -189,7 +189,8 @@ form `D(,B)` on an RS-format `LM` with **base register 0** — `98 0C 0014` inst
 `98 0C D014` — so R0–R12 were restored from PSA low storage at `0x14`–`0x48` rather
 than from the caller's save area. R13/R14 survived because the adjacent
 `L R14,12(,R13)` is RX-format and assembled correctly.
-`[source: rexx370/docs/irxterm-c-host-crash.md; commits rexx370 a04a945, cc370 15927eb]`
+`[source: rexx370/docs/irxterm-c-host-crash.md; commits rexx370 a04a945, cc370 15927eb.
+Full postmortem: **PM-2026-001**]`
 
 Both explanations fit the same symptom — corrupted R0–R12, intact R13/R14, rotating
 abend codes. That is why the LE answer is durable and why it costs real time: it is

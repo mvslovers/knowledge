@@ -14,7 +14,7 @@ sources:
 verified_on: 2026-08-01
 applies_to: [httpd, httprexx, httplua, mvsmf, ufsd]
 tags: [httpd, apache, ihs, provenance, encoding, codepage, model-priors, myth]
-related: [ECO-0003]
+related: [ECO-0003, MVS-ENC-0001]
 ---
 
 ## The myth
