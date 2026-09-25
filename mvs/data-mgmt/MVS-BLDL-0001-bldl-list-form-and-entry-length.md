@@ -12,7 +12,7 @@ sources:
 verified_on: 2026-09-23
 applies_to: [rexx370, mvs38src]
 tags: [bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra, linklist, gotcha]
-related: [CF-2026-002, PM-2026-001]
+related: [CF-2026-002, CF-2026-003, PM-2026-001]
 ---
 
 ## Symptom
@@ -89,6 +89,10 @@ static constant. Copy a pattern into GETMAINed storage and pass that. This
 forces the `GETMAIN` ahead of whatever the BLDL was meant to guard.
 
 ## What BLDL with DCB=0 actually searches
+
+> **Disputed — see `CF-2026-003`.** Nothing here was measured, and SVC 18
+> (`IGC018`, `NOLNKSVC`) searches the current TCB's JOBLIB/STEPLIB before
+> LINKLIB.
 
 The link library — *not* the caller's STEPLIB or JOBLIB. For a TMP exit or
 anything that runs at logon this is the right semantic (there is no STEPLIB

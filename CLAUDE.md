@@ -68,6 +68,7 @@ knowledge/
 │   ├── subsystem/         SSCT/SSCVT, IEFSSREQ, SSI function codes
 │   ├── jes2/              job lifecycle, JCT, internal reader, HASP internals
 │   ├── data-mgmt/         DASD geometry, VTOC/DSCB, BSAM/QSAM/BPAM, catalogs
+│   ├── jcl/               DD semantics, concatenation, DCB merge
 │   ├── tso-rexx/          IKJEFT01, IRXINIT/IRXTMPX, REXX host environments
 │   ├── tcpip/             EZASOKET, TCP/IP for MVS API, socket semantics
 │   ├── encoding/          EBCDIC codepages, CP037 vs IBM-1047, translation tables

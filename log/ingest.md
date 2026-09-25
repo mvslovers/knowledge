@@ -5,7 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
-| 2026-09-25 | KB consistency pass — `tools/kb-index.py`, ad-hoc lint, `IHBINNRA` / `BLDL` macro source | `CF-2026-002` | `MVS-BLDL-0001` (→ `disputed`; `applies_to` free-text entry dropped), `ECO-0001` + `ECO-0007` (`related:` reciprocates `ECO-0008`) | `CF-2026-002` |
+| 2026-09-25 | KB consistency pass — `tools/kb-index.py`, `tools/kb-lint.py`, `IHBINNRA` / `BLDL` macro source, `IGC018` (SVC 18) | `CF-2026-002`, `CF-2026-003`; `tools/kb-lint.py` | `MVS-BLDL-0001` (→ `disputed`; `applies_to` free-text entry dropped), `ECO-0001` (→ `disputed`; `related:` reciprocates `ECO-0008`), `ECO-0007` (`related:` reciprocates `ECO-0008`); `CLAUDE.md` §3 layout gains `mvs/jcl/` | `CF-2026-002`, `CF-2026-003` |
 | 2026-09-24 | rexx370 session — WP-33-TSO on MVSCE-LAB (JOB01181, JOB01185, JOB01189, JOB01192, s3270 foreground run); IKT0009C, IKJEFT01 sources | `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-004` | none | none |
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
@@ -27,6 +27,19 @@ Ran `tools/kb-index.py` and an ad-hoc lint over the working tree (§11's
   to all register notation. The `IHBINNRA` expansion shows why `(1)` in
   particular fails (`LA 1,0` then `LR 0,1`) and suggests other registers
   work. The document is `disputed` until one job settles it.
+
+Second round, same day:
+
+- **`CF-2026-003`**: `MVS-BLDL-0001` says BLDL with DCB=0 searches only the
+  link library. That claim has no source and was never measured, and SVC 18
+  says the opposite: `IGC018` at `NOLNKSVC` searches the current TCB's
+  JOBLIB/STEPLIB (`TCBJLB`) and only then `CVTLINK`. The same claim is in
+  `rexx370/src_ptf/TODO_IKJEFT01.md` (Offen, item 3), which is not in the KB.
+- `ECO-0001` goes from `assumed` to `disputed`, because `CF-2026-001` rests on
+  it (§9). The TK4- gap is still marked, now inline as `[assumed]`.
+- `tools/kb-lint.py` implements §11. It was checked against a copy with five
+  planted faults and caught all of them (exit 1). On this tree it reports
+  0 errors.
 
 The 2026-09-23 BLDL and 2026-08-04 rows above were backfilled in this pass.
 Both are reconstructed from the documents' front matter and file dates, not

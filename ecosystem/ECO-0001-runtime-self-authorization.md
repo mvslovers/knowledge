@@ -1,7 +1,7 @@
 ---
 id: ECO-0001
 title: Runtime self-authorization instead of APF library authorization
-status: assumed
+status: disputed
 platform: [mvs38j]
 sources:
   - "Mike Großmann, 2026-07-27 — statement of intent"
@@ -12,6 +12,8 @@ applies_to: [libc370, ufsd, httpd, mvsmf, nsf370]
 tags: [apf, authorization, svc244, portability]
 related: [CF-2026-001, ECO-0007, ECO-0008]
 ---
+
+> **Disputed — see `CF-2026-001`** (does any `AC(1)` in our builds carry load?).
 
 ## Context
 
@@ -54,7 +56,8 @@ No `IEAAPFxx` change and no IPL are required.
 - **The whole ecosystem depends on SVC 244 being present on the target system.**
   SVC 244 lies in the user-SVC range, which is installation-defined by definition —
   there is no "always present" for it in stock MVS 3.8j. **MVSCE and TK5 are both
-  confirmed; TK4- remains unverified**, which is why this is still `assumed`.
+  confirmed; TK4- remains unverified** `[assumed]` — the document as a whole is
+  `disputed` because of `CF-2026-001`, and this TK4- gap stays open alongside it.
   On TK5 (`drnmig3a`, 2026-08-13) httpd 4.0.0-dev started and reported
   `HTTPD011I <name> was APF authorized via SVC 244` — the `unauth_setup()` branch,
   so the SVC was reached and worked.

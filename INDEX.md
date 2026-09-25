@@ -5,7 +5,7 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-25 documents.
+26 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
@@ -15,6 +15,8 @@ open exactly that document — not the directory.
 | `MVS-SMP-0003` | RMID is not the SYSMOD that installed the element, and RMID numbers are not ordered | `myth` | mvs38j | smp, smp4, rmid, fmid, sysmod, hma2380, hma4090, supersede | `mvs/tooling/MVS-SMP-0003-rmid-is-not-the-installing-sysmod.md` |
 | `CF-2026-001` | Does any AC(1) setting in our builds actually carry load? | `disputed` | mvs38j | apf, authorization, svc244, ac1 | `conflicts/CF-2026-001-ac1-vs-self-authorization.md` |
 | `CF-2026-002` | Does BLDL fail for every register-form list operand, or only for (1)? | `disputed` | mvs38j | bldl, ihbinnra, macro, register-notation, svc18 | `conflicts/CF-2026-002-bldl-register-form.md` |
+| `CF-2026-003` | Does BLDL with DCB=0 search the caller's JOBLIB/STEPLIB, or only the link library? | `disputed` | mvs38j | bldl, svc18, igc018, joblib, steplib, tasklib, linklib, tcbjlb | `conflicts/CF-2026-003-bldl-dcb0-search-order.md` |
+| `ECO-0001` | Runtime self-authorization instead of APF library authorization | `disputed` | mvs38j | apf, authorization, svc244, portability | `ecosystem/ECO-0001-runtime-self-authorization.md` |
 | `MVS-BLDL-0001` | BLDL returns RC=4 for modules that are certainly there — the list must be passed symbolically, not in a register | `disputed` | mvs38j | bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra | `mvs/data-mgmt/MVS-BLDL-0001-bldl-list-form-and-entry-length.md` |
 | `ECO-0007` | Installing our products through SMP 4 — SMP copies host-bound load modules, it does not re-bind them | `tested` | mvs38j | smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation | `ecosystem/ECO-0007-smp4-product-delivery.md` |
 | `ECO-0008` | RAKF gives every started task the same identity, and grants ALTER to everything it does not know | `tested` | mvs38j | rakf, racf, security, authorization, acee, racinit, stc, identity | `ecosystem/ECO-0008-rakf-stc-identity-and-authorization.md` |
@@ -33,15 +35,13 @@ open exactly that document — not the directory.
 | `ECO-0006` | A server module runs under its own GRT — httpd's core statics are invisible from it | `source` | mvs38j | grt, wsa, writable-static, module, link-svc, crt1, crtm, grtapp1 | `ecosystem/ECO-0006-module-grt-isolation.md` |
 | `MVS-ENC-0001` | httpd's three ASCII/EBCDIC translation table pairs — CP037, IBM1047, LEGACY | `source` | mvs38j | encoding, ebcdic, ascii, codepage, cp037, ibm1047, legacy, brackets | `mvs/encoding/MVS-ENC-0001-httpd-translation-tables.md` |
 | `UFSD-ADR-0001` | Session identity is supplied by the client via UFSREQ_SETUSER, never derived in the SSI router | `source` | mvs38j | ufsd, ssi, session, identity, racf, acee, asxbsenv, race-condition | `projects/ufsd/decisions/UFSD-ADR-0001-session-identity-from-client.md` |
-| `ECO-0001` | Runtime self-authorization instead of APF library authorization | `assumed` | mvs38j | apf, authorization, svc244, portability | `ecosystem/ECO-0001-runtime-self-authorization.md` |
 
 ## By status
 
 - **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
-- **disputed** (3): `CF-2026-001`, `CF-2026-002`, `MVS-BLDL-0001`
+- **disputed** (5): `CF-2026-001`, `CF-2026-002`, `CF-2026-003`, `ECO-0001`, `MVS-BLDL-0001`
 - **tested** (13): `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
-- **assumed** (1): `ECO-0001`
 
 ## Reference material (`sources/`)
 
@@ -58,8 +58,8 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 - **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `PM-2026-001`
 - **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
 - **mbt**: `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`
-- **mvs38src**: `CF-2026-002`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `PM-2026-003`
+- **mvs38src**: `CF-2026-002`, `CF-2026-003`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `PM-2026-003`
 - **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-SMP-0003`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
 - **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
-- **rexx370**: `CF-2026-002`, `ECO-0003`, `ECO-0005`, `ECO-0007`, `MVS-BLDL-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-004`
+- **rexx370**: `CF-2026-002`, `CF-2026-003`, `ECO-0003`, `ECO-0005`, `ECO-0007`, `MVS-BLDL-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-004`
 - **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `UFSD-ADR-0001`
