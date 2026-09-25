@@ -12,7 +12,7 @@ verified_on: 2026-09-23
 verified_platforms: ["TK5 Update 5", "MVS/CE 3.0.0 (mvsdev)", "TK3 (build listings only)"]
 applies_to: [mvs38src, mvsmf]
 tags: [smp, smp4, rmid, fmid, sysmod, hma2380, hma4090, supersede, relfile, myth, model-priors, comparison]
-related: [ECO-0007, MVS-SMP-0001, MVS-SMP-0002]
+related: [ECO-0007, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0004]
 ---
 
 ## The myth

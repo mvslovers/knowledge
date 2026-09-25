@@ -5,7 +5,7 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-26 documents.
+28 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
@@ -24,6 +24,8 @@ open exactly that document — not the directory.
 | `MVS-JCL-0001` | A concatenation takes its DCB from the first dataset — a later library with larger blocks gives WRNG.LEN.RECORD | `tested` | mvs38j | jcl, dcb, blksize, concatenation, syslib, bsam, ifo261, wrng-len-record | `mvs/jcl/MVS-JCL-0001-concatenation-blocksize.md` |
 | `MVS-SMP-0001` | APPLY checks requisites against the CDS, ACCEPT against the ACDS — a PTF applied but never accepted blocks every later ACCEPT | `tested` | mvs38j | smp, smp4, apply, accept, requisite, pre, req, cds | `mvs/tooling/MVS-SMP-0001-requisite-zone.md` |
 | `MVS-SMP-0002` | A received SYSMOD is unknown to LIST CDS — SMP 4 keeps the receive state in SMPPTS, not in the zone | `tested` | mvs38j | smp, smp4, receive, smpptfin, smppts, cds, acds, sysmod | `mvs/tooling/MVS-SMP-0002-receive-state-not-in-zone.md` |
+| `MVS-SMP-0004` | APPLY of a ++MOD re-links the installed target load module, not the DLIB — whatever is in the target survives | `tested` | mvs38j | smp, smp4, apply, accept, link-edit, lmod, jclin, target-library | `mvs/tooling/MVS-SMP-0004-apply-links-against-target-lmod.md` |
+| `MVS-SMP-0005` | RESTORE of an applied usermod clears the inventory, but CSECTs it added stay in the load module | `tested` | mvs38j | smp, smp4, restore, reject, usermod, jclin, lmod, csect | `mvs/tooling/MVS-SMP-0005-restore-leaves-added-csects.md` |
 | `MVS-SSI-0001` | Dynamic SSI registration — and why a second START says IEF612I PROCEDURE NOT FOUND | `tested` | mvs38j | ssi, ssct, ssvt, jesct, iefssreq, ief612i, stc, start | `mvs/subsystem/MVS-SSI-0001-dynamic-registration-double-start.md` |
 | `MVS-TSO-0001` | TPUT does nothing in the background TMP — SVC 93 returns without work when ASCBTSB is zero | `tested` | mvs38j | tput, svc93, ikt0009c, putline, tmp, ikjeft01, background, batch | `mvs/tso-rexx/MVS-TSO-0001-tput-silent-in-background-tmp.md` |
 | `MVS-TSO-0002` | Calling PUTLINE without a CPPL — the UPT via LWA+24 → PSCB+52, the ECT via LWA+32 | `tested` | mvs38j | putline, ikjputl, iopl, ptpb, upt, pscb, lwa, ect | `mvs/tso-rexx/MVS-TSO-0002-putline-iopl-without-cppl.md` |
@@ -40,7 +42,7 @@ open exactly that document — not the directory.
 
 - **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
 - **disputed** (2): `CF-2026-001`, `ECO-0001`
-- **tested** (16): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
+- **tested** (18): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
 
 ## Reference material (`sources/`)
@@ -58,8 +60,8 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 - **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `PM-2026-001`
 - **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
 - **mbt**: `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`
-- **mvs38src**: `CF-2026-002`, `CF-2026-003`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `PM-2026-003`
+- **mvs38src**: `CF-2026-002`, `CF-2026-003`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `MVS-SMP-0004`, `PM-2026-003`
 - **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-SMP-0003`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
 - **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
-- **rexx370**: `CF-2026-002`, `CF-2026-003`, `ECO-0003`, `ECO-0005`, `ECO-0007`, `MVS-BLDL-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-004`
+- **rexx370**: `CF-2026-002`, `CF-2026-003`, `ECO-0003`, `ECO-0005`, `ECO-0007`, `MVS-BLDL-0001`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-TSO-0001`, `MVS-TSO-0002`, `PM-2026-001`, `PM-2026-002`, `PM-2026-004`
 - **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `UFSD-ADR-0001`

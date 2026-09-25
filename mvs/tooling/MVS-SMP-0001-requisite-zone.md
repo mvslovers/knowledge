@@ -10,7 +10,7 @@ verified_on: 2026-09-23
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [mvs38src, ufsd, httpd, ftpd, mbt]
 tags: [smp, smp4, apply, accept, requisite, pre, req, cds, acds, sysmod, nogo, hma3022, hma3590]
-related: [ECO-0007, MVS-SMP-0002, MVS-SMP-0003]
+related: [ECO-0007, MVS-SMP-0002, MVS-SMP-0003, MVS-SMP-0004]
 ---
 
 ## The claim
