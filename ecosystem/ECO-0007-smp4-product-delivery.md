@@ -16,7 +16,7 @@ verified_on: 2026-08-14
 verified_platforms: ["MVS/CE (mvsdev)", "TK5 (drnmig3a)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, rexx370, nsf370, mbt]
 tags: [smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation, distribution, xmit]
-related: [ECO-0001, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003]
+related: [ECO-0001, ECO-0008, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003]
 ---
 
 ## Context
