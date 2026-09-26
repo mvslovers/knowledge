@@ -12,7 +12,7 @@ sources:
 verified_on: 2026-09-24
 applies_to: [rexx370]
 tags: [putline, ikjputl, iopl, ptpb, upt, pscb, lwa, ect, cppl, cvtputl, replaceable-routine, tso]
-related: [MVS-TSO-0001, PM-2026-004]
+related: [MVS-TSO-0001, PM-2026-004, MVS-TSO-0003]
 ---
 
 ## The problem

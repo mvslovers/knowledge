@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-09-26 | rexx370 session — BREXX/370 coexistence on MVSCE-LAB (JOB01315/01316, fix PR #244, JOB01319/01324/01333, foreground run); brexx370 source 794b701 (rxinit.hlasm, rxterm.hlasm, #ENVCTX) | `MVS-TSO-0003` | `MVS-TSO-0001`, `MVS-TSO-0002` (`related:` → `MVS-TSO-0003`) | none |
 | 2026-09-25 | rexx370 session — ZMG0002 reinstall on MVSCE-LAB: RESTORE CHECK/RESTORE JOB01301/01302, AMBLIST JOB01303/01304, REJECT JOB01305/01306, LIST JOB01307, RECEIVE/APPLY/verify JOB01310–01313 | `MVS-SMP-0005` | `ECO-0007`, `MVS-SMP-0004` (`related:` → `MVS-SMP-0005`) | none |
 | 2026-09-25 | rexx370 session — USERMOD ZMG0002 on MVSCE-LAB: RECEIVE JOB01259, APPLY CHECK JOB01260, APPLY JOB01261 (LKDPRINT), verify JOB01262 | none | `MVS-SMP-0004` (open question on ++JCLIN-added modules answered, `[tested]`) | none |
 | 2026-09-25 | rexx370 session — MVSCE-LAB TSO repair: APPLY UY43678/UZ42826 JOB01231 (LKDPRINT), AMBLIST JOB01232, ACCEPT UY43678/UZ42826/UY16532 JOB01234, AMBLIST AOST4 JOB01235; CDS LMOD entries JOB01219/JOB01226 | `MVS-SMP-0004` | `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` (`related:` → `MVS-SMP-0004`) | none |

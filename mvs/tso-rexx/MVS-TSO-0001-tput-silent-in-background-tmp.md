@@ -11,7 +11,7 @@ sources:
 verified_on: 2026-09-24
 applies_to: [rexx370]
 tags: [tput, svc93, ikt0009c, putline, tmp, ikjeft01, background, batch, systsprt, ascbtsb, tsb, silent-failure]
-related: [MVS-TSO-0002, PM-2026-004]
+related: [MVS-TSO-0002, PM-2026-004, MVS-TSO-0003]
 ---
 
 ## Claim
