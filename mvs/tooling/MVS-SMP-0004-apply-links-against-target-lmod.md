@@ -12,7 +12,7 @@ verified_on: 2026-09-25
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [rexx370, mvs38src]
 tags: [smp, smp4, apply, accept, link-edit, lmod, jclin, target-library, dlib, usermod, iewl]
-related: [ECO-0007, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003, MVS-SMP-0005]
+related: [ECO-0007, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003, MVS-SMP-0005, MVS-LNK-0001]
 ---
 
 ## The claim

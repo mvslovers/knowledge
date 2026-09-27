@@ -15,7 +15,7 @@ sources:
 verified_on: 2026-09-25
 applies_to: [rexx370, mvs38src]
 tags: [bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra, linklist, steplib, gotcha]
-related: [CF-2026-002, CF-2026-003, PM-2026-001]
+related: [CF-2026-002, CF-2026-003, PM-2026-001, MVS-LNK-0001]
 ---
 
 ## Symptom
