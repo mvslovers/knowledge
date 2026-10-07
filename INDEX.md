@@ -5,7 +5,7 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-30 documents.
+31 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
@@ -31,6 +31,7 @@ open exactly that document — not the directory.
 | `MVS-TSO-0001` | TPUT does nothing in the background TMP — SVC 93 returns without work when ASCBTSB is zero | `tested` | mvs38j | tput, svc93, ikt0009c, putline, tmp, ikjeft01, background, batch | `mvs/tso-rexx/MVS-TSO-0001-tput-silent-in-background-tmp.md` |
 | `MVS-TSO-0002` | Calling PUTLINE without a CPPL — the UPT via LWA+24 → PSCB+52, the ECT via LWA+32 | `tested` | mvs38j | putline, ikjputl, iopl, ptpb, upt, pscb, lwa, ect | `mvs/tso-rexx/MVS-TSO-0002-putline-iopl-without-cppl.md` |
 | `MVS-TSO-0003` | BREXX/370 overwrites ECTENVBK and leaves it pointing at freed storage — never read through ECTENVBK unchecked | `tested` | mvs38j | tso, rexx, brexx, ectenvbk, ect, envblock, irxanchr, coexistence | `mvs/tso-rexx/MVS-TSO-0003-brexx-leaves-ectenvbk-dangling.md` |
+| `MVS-TSO-0004` | A dropped TN3270 logon can leave its local terminal unallocated -- V NET,INACT/ACT gives it back to NETSOL | `tested` | mvs38j | tso, vtam, netsol, tn3270, local-terminal, logon, hercules, v-net | `mvs/tso-rexx/MVS-TSO-0004-local-terminal-lost-to-netsol.md` |
 | `PM-2026-001` | IRXTERM crashes only when called from a C host — as370 assembles RS-format D(,B) with base 0 | `tested` | mvs38j | as370, hlasm, rs-format, lm, stm, psa, low-core, s0c1 | `postmortems/PM-2026-001-irxterm-c-host-crash.md` |
 | `PM-2026-002` | Load module truncates past 16 KB — ld370's TXT-card reader silently dropped text, it was never FETCH | `tested` | mvs38j | ld370, linker, load-module, txt-card, s0c1, s106, iewfetch, amblist | `postmortems/PM-2026-002-ld370-text-truncation.md` |
 | `PM-2026-003` | A hundred source members went unreadable — the volume was full, and every reader reported it differently | `tested` | mvs38j | dasd, space, d37, iec031i, mvsmf, ftp, iehlist, silent-truncation | `postmortems/PM-2026-003-full-volume-silent-truncation.md` |
@@ -44,7 +45,7 @@ open exactly that document — not the directory.
 
 - **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
 - **disputed** (2): `CF-2026-001`, `ECO-0001`
-- **tested** (20): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
+- **tested** (21): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `MVS-TSO-0004`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
 
 ## Reference material (`sources/`)
@@ -62,7 +63,7 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 - **httplua**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`
 - **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `MVS-TSO-0003`, `PM-2026-001`
 - **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
-- **mbt**: `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`
+- **mbt**: `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-TSO-0004`
 - **mvs38src**: `CF-2026-002`, `CF-2026-003`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `MVS-SMP-0004`, `PM-2026-003`
 - **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-LNK-0001`, `MVS-SMP-0003`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
 - **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
