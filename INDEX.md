@@ -5,7 +5,7 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-31 documents.
+32 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
@@ -21,6 +21,7 @@ open exactly that document — not the directory.
 | `ECO-0008` | RAKF gives every started task the same identity, and grants ALTER to everything it does not know | `tested` | mvs38j | rakf, racf, security, authorization, acee, racinit, stc, identity | `ecosystem/ECO-0008-rakf-stc-identity-and-authorization.md` |
 | `MVS-BLDL-0001` | BLDL returns RC=4 for modules that are certainly there — BLDL 0,(1) loses the list address | `tested` | mvs38j | bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra | `mvs/data-mgmt/MVS-BLDL-0001-bldl-list-form-and-entry-length.md` |
 | `MVS-DASD-0001` | DASD volume size limit and volume creation under Hercules — 32,767 tracks, and dasdinit alone is not enough | `tested` | mvs38j | dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390 | `mvs/data-mgmt/MVS-DASD-0001-volume-size-and-creation.md` |
+| `MVS-HERC-0001` | Hercules web console API -- how an operator command and its reply appear in the syslog | `tested` | mvs38j | hercules, web-console, http, cgi-bin, api, syslog, hhc00013i, operator-command | `mvs/tooling/MVS-HERC-0001-web-console-api-syslog-format.md` |
 | `MVS-JCL-0001` | A concatenation takes its DCB from the first dataset — a later library with larger blocks gives WRNG.LEN.RECORD | `tested` | mvs38j | jcl, dcb, blksize, concatenation, syslib, bsam, ifo261, wrng-len-record | `mvs/jcl/MVS-JCL-0001-concatenation-blocksize.md` |
 | `MVS-LNK-0001` | Two link-list changes that fail with IEA703I 106-F until the next IPL — a new extent, and a compress that moves resident-BLDL modules | `tested` | mvs38j | linklist, lnklst, ieabld, resident-bldl, iea703i, abend106, program-fetch, compress | `mvs/supervisor/MVS-LNK-0001-linklist-changes-need-ipl.md` |
 | `MVS-SMP-0001` | APPLY checks requisites against the CDS, ACCEPT against the ACDS — a PTF applied but never accepted blocks every later ACCEPT | `tested` | mvs38j | smp, smp4, apply, accept, requisite, pre, req, cds | `mvs/tooling/MVS-SMP-0001-requisite-zone.md` |
@@ -45,7 +46,7 @@ open exactly that document — not the directory.
 
 - **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
 - **disputed** (2): `CF-2026-001`, `ECO-0001`
-- **tested** (21): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `MVS-TSO-0004`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
+- **tested** (22): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-HERC-0001`, `MVS-JCL-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `MVS-TSO-0004`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
 
 ## Reference material (`sources/`)
@@ -63,7 +64,7 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 - **httplua**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`
 - **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `MVS-TSO-0003`, `PM-2026-001`
 - **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
-- **mbt**: `ECO-0007`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-TSO-0004`
+- **mbt**: `ECO-0007`, `MVS-HERC-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-TSO-0004`
 - **mvs38src**: `CF-2026-002`, `CF-2026-003`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `MVS-SMP-0004`, `PM-2026-003`
 - **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-LNK-0001`, `MVS-SMP-0003`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
 - **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
