@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-10-07
 applies_to: [mbt]
 tags: [tso, vtam, netsol, tn3270, local-terminal, logon, hercules, v-net, ist082i, stuck-logon]
-related: [MVS-HERC-0001]
+related: [MVS-HERC-0001, MVS-TSO-0005]
 ---
 
 ## Symptom
