@@ -10,10 +10,12 @@ sources:
   - "ftpd/src/ftpd.c:196-217 — the startup RACINIT that drops out of it"
   - "ftpd/doc/FTPD_RAKF_SETUP.md — the FTPD-specific setup written from these findings"
   - "TK5 system, 2026-08-14 — FTPD004I, RAKFUIDS2 and the group-connection test"
+  - "macros/maclib/IHAACEE.asm:53-55 — ACEEUSER/ACEEUSRL/ACEEUSRI; consumers IEFSMFIE.asm:395, HASPSSSM.asm:9055, RAKF ICHSFR00.hlasm:527 (read by the libc370 session 2026-10-17)"
+  - "libc370 ihaacee.h, 2.18.0 (libc370#581 / PR #582, 2026-10-18) — the subfields in a union, offsets checked with cc370"
 verified_on: 2026-08-14
 verified_platforms: ["TK5"]
 applies_to: [ftpd, httpd, mvsmf, libc370]
-tags: [rakf, racf, security, authorization, acee, racinit, stc, identity]
+tags: [rakf, racf, security, authorization, acee, racinit, stc, identity, aceeuser, ihaacee, length-prefix]
 related: [ECO-0001, ECO-0007]
 ---
 
@@ -171,6 +173,35 @@ Three properties that bite:
 A guide written against the wrong one fails in both directions: a blank
 password is rejected on 1.2.x, and a filled one points at nothing on 2.0.0.
 State the baseline explicitly in anything we publish.
+
+## The userid in the ACEE is length-prefixed, and that is IBM's layout
+
+Whoever reads the identity out of an ACEE reads a **length byte followed by
+eight characters**, not a nine-byte name. `IHAACEE` has it as three fields:
+
+```
+ACEEUSER DS    0CL9        the pair, addressed as one
+ACEEUSRL DS    AL1         length
+ACEEUSRI DS    CL8         the userid itself
+```
+`[source: macros/maclib/IHAACEE.asm:53-55]`
+
+libc370 used to fold the three into a single `char aceeuser[9]`
+(`ihaacee.h:22`), which is what invites a flat eight-byte `MVC` from offset
++0: it copies the length byte into the first target byte, shifts the name by
+one and drops the last character. The failure is quiet — the name comes out
+*almost* right. Since libc370 2.18.0 (released 2026-10-18, libc370#581 /
+PR #582) the header carries `aceeusrl`/`aceeusri` and `aceegrpl`/`aceegrpn`
+in a union beside the unchanged `aceeuser[9]`/`aceegrp[9]`; `sizeof(ACEE)`
+stays 144, and the offsets X'14'/X'15'/X'1D'/X'1E' were checked with cc370.
+`[source: libc370 ihaacee.h, 2.18.0]`
+
+`ACEEUSRI` is treated as blank-padded to eight by IBM's own code and by RAKF:
+`IEFSMFIE.asm:395`, `HASPSSSM.asm:9055`, and RAKF's `ICHSFR00.hlasm:527`
+comparing against `=CL8'STC'`. `[source]` **Three consumers and no producer:**
+the RACINIT path that *builds* the ACEE was not read, so "always blank-padded"
+is inferred from how the field is consumed, not from how it is written.
+`[inferred]`
 
 ## Consequences
 

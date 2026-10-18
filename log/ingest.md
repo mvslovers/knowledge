@@ -5,6 +5,8 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-18 | oftpd session — inbox `2026-10-17-oftpsvc-review-vier-beobachtungen.md` (review of `oftpd/asm/oftpsvc.asm`): as370 1.6.3 host runs, IBM `IHAACEE.asm` read by the libc370 session, mbt `internal/build/build.go` | `MVS-PROT-0001`, `ECO-0009` | `ECO-0008` (`ACEEUSER` is length-prefixed; libc370 2.18.0 carries the subfields), `ECO-0004` (`related:` link only -- its `IEAVSY50` item is **held back pending a measurement**, see below) | none |
+| 2026-10-18 | oftpd session — the SVC 237 install/restore run on m38x (MVSCE-EXP): `GET /cgi-bin/tasks/syslog` at `mvsdev.lan:8383`, `mbt target console m38x`, oftpd `internals/xmem.md` section 10 | none | `MVS-HERC-0001` (the HTML `tasks/syslog` route; `msgcount` counts messages and the reader's own `D` commands fill the window — answers part of its open "Not measured" bullet; `D A,<jobname>` invalid; the m38x port pair; `verified_on` → 2026-10-18, `applies_to` + `oftpd`) | none |
 | 2026-09-26 | rexx370 session — BREXX/370 coexistence on MVSCE-LAB (JOB01315/01316, fix PR #244, JOB01319/01324/01333, foreground run); brexx370 source 794b701 (rxinit.hlasm, rxterm.hlasm, #ENVCTX) | `MVS-TSO-0003` | `MVS-TSO-0001`, `MVS-TSO-0002` (`related:` → `MVS-TSO-0003`) | none |
 | 2026-09-25 | rexx370 session — ZMG0002 reinstall on MVSCE-LAB: RESTORE CHECK/RESTORE JOB01301/01302, AMBLIST JOB01303/01304, REJECT JOB01305/01306, LIST JOB01307, RECEIVE/APPLY/verify JOB01310–01313 | `MVS-SMP-0005` | `ECO-0007`, `MVS-SMP-0004` (`related:` → `MVS-SMP-0005`) | none |
 | 2026-09-25 | rexx370 session — USERMOD ZMG0002 on MVSCE-LAB: RECEIVE JOB01259, APPLY CHECK JOB01260, APPLY JOB01261 (LKDPRINT), verify JOB01262 | none | `MVS-SMP-0004` (open question on ++JCLIN-added modules answered, `[tested]`) | none |
@@ -15,6 +17,63 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-18 — the SVC review's four observations, and one near-conflict
+
+The inbox item was split four ways. Three were ingested; the fourth is held
+back and stays in the inbox under a name of its own.
+
+Created: **`MVS-PROT-0001`** — `MVCK`'s key operand is a fetch check, so moving
+caller data under the caller's key does not keep a forged pointer out of key-0
+storage; `TPROT` is the store check. Filed `inferred`, not `manual`: the
+Principles of Operation is not held locally and is not in `sources/`, so the
+condition-code table is second-hand and says so. Only the as370 encoding is
+`tested`. oftpd#15 is the experiment that would make it `tested`, and it is
+scheduled for its own reasons.
+
+Created: **`ECO-0009`** — as370 exits with its severity, mbt gates at rc >= 8,
+and the gap is rc 4, where `IFO026` (column-72 continuation) lives. Whether
+rc 4 should fail a build is an open maintainer decision and is recorded as
+such, not decided here.
+
+**Not changed: `ECO-0004`, deliberately, and this is the interesting part of
+the run.** Its sentence "Only R13 is preserved across the call" is `source`
+from `@@xmpost.c` — the *caller* — while IBM's `IEAVSY50` exit notes say
+"REGS 9,14 ARE SAVED". The three `IEAVSY50` readings were written into the
+document during this ingest and then **taken back out the same day** at the
+libc370 session's request: what it had was IBM's comment block and a code
+reading, not a measurement, and it is building an authorized probe that loads
+markers into R0-R15, issues the branch-entry XMPOST and reports which
+registers come back. Until that runs, `ECO-0004` keeps its wording and the
+item waits in `inbox/2026-10-17-eco0004-ieavsy50-pending-measurement.md`.
+
+The only trace left in the document is the reciprocal `related:` link to
+`MVS-PROT-0001`, which asserts nothing. Worth recording as the rule it
+illustrates: a `source` claim from the callee does outrank one from the
+caller (§9), but "outranks" decides a conflict — it does not license
+upgrading a code reading into the document before anyone has run it (§0.4).
+
+Changed: **`ECO-0008`** — a section on `ACEEUSER` being length-prefixed in
+IBM's own `IHAACEE`, with the flat eight-byte `MVC` as the failure it invites,
+and the caveat that three *consumers* were read and no producer, so the blank
+padding is inferred.
+
+Division of labour, recorded because it is the §9 defence working as intended:
+the libc370 session read `IEAVSY50` and `IHAACEE` and produced the line
+numbers; this session wrote the prose and does the ingest; libc370 cross-reads
+what was written — and on `ECO-0004` it stopped the ingest, which is the half
+of cross-reading that usually does not happen. Neither party both measured and
+published the sentence beside the measurement.
+
+One number in `MVS-PROT-0001` was caught the same way before it shipped: the
+inbox note's "two probes cover a range up to 2048 because it spans at most two
+**4 K** blocks" carries an XA-era granularity. S/370 keys cover **2 K**, which
+makes the stated reason wrong while leaving the 2048 bound safe. The document
+now states the bound, both candidate granularities, and that the one that
+matters is unmeasured.
+
+The original inbox file is deleted and replaced by the `ECO-0004` remainder.
+`inbox/2026-09-25-ihbinnra-bpam-reader.md` remains and is untouched.
 
 ## 2026-09-25 — BLDL conflicts settled on MVS/CE LAB
 

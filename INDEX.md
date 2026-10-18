@@ -5,7 +5,7 @@
 Rung 1 of the retrieval ladder (`CLAUDE.md` §7). Find the document here, then
 open exactly that document — not the directory.
 
-33 documents.
+35 documents.
 
 | ID | Title | Status | Platform | Tags | Path |
 |---|---|---|---|---|---|
@@ -19,6 +19,7 @@ open exactly that document — not the directory.
 | `CF-2026-003` | Does BLDL with DCB=0 search the caller's JOBLIB/STEPLIB, or only the link library? | `tested` | mvs38j | bldl, svc18, igc018, joblib, steplib, tasklib, linklib, tcbjlb | `conflicts/CF-2026-003-bldl-dcb0-search-order.md` |
 | `ECO-0007` | Installing our products through SMP 4 — SMP copies host-bound load modules, it does not re-bind them | `tested` | mvs38j | smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation | `ecosystem/ECO-0007-smp4-product-delivery.md` |
 | `ECO-0008` | RAKF gives every started task the same identity, and grants ALTER to everything it does not know | `tested` | mvs38j | rakf, racf, security, authorization, acee, racinit, stc, identity | `ecosystem/ECO-0008-rakf-stc-identity-and-authorization.md` |
+| `ECO-0009` | as370 exits with its severity and mbt gates on it — the gap is rc 4, where the column-72 continuation lives | `tested` | mvs38j | as370, assembler, exit-code, severity, ifo026, ifo196, ifo213, column-72 | `ecosystem/ECO-0009-as370-severity-and-the-rc4-gap.md` |
 | `MVS-BLDL-0001` | BLDL returns RC=4 for modules that are certainly there — BLDL 0,(1) loses the list address | `tested` | mvs38j | bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra | `mvs/data-mgmt/MVS-BLDL-0001-bldl-list-form-and-entry-length.md` |
 | `MVS-DASD-0001` | DASD volume size limit and volume creation under Hercules — 32,767 tracks, and dasdinit alone is not enough | `tested` | mvs38j | dasd, volume, vtoc, dscb, dasdinit, dasdload, ickdsf, 3390 | `mvs/data-mgmt/MVS-DASD-0001-volume-size-and-creation.md` |
 | `MVS-HERC-0001` | Hercules web console API -- how an operator command and its reply appear in the syslog | `tested` | mvs38j | hercules, web-console, http, cgi-bin, api, syslog, hhc00013i, operator-command | `mvs/tooling/MVS-HERC-0001-web-console-api-syslog-format.md` |
@@ -42,13 +43,15 @@ open exactly that document — not the directory.
 | `ECO-0006` | A server module runs under its own GRT — httpd's core statics are invisible from it | `source` | mvs38j | grt, wsa, writable-static, module, link-svc, crt1, crtm, grtapp1 | `ecosystem/ECO-0006-module-grt-isolation.md` |
 | `MVS-ENC-0001` | httpd's three ASCII/EBCDIC translation table pairs — CP037, IBM1047, LEGACY | `source` | mvs38j | encoding, ebcdic, ascii, codepage, cp037, ibm1047, legacy, brackets | `mvs/encoding/MVS-ENC-0001-httpd-translation-tables.md` |
 | `UFSD-ADR-0001` | Session identity is supplied by the client via UFSREQ_SETUSER, never derived in the SSI router | `source` | mvs38j | ufsd, ssi, session, identity, racf, acee, asxbsenv, race-condition | `projects/ufsd/decisions/UFSD-ADR-0001-session-identity-from-client.md` |
+| `MVS-PROT-0001` | MVCK's key operand is a fetch check, not the protection it is taken for — TPROT is the store check | `inferred` | mvs38j | storage-key, key-granularity, protection, mvck, mvcp, mvcs, tprot, fetch-protection | `mvs/architecture/MVS-PROT-0001-mvck-is-a-fetch-check-tprot-is-the-store-check.md` |
 
 ## By status
 
 - **myth** (4): `ECO-0002`, `ECO-0003`, `ECO-0005`, `MVS-SMP-0003`
 - **disputed** (2): `CF-2026-001`, `ECO-0001`
-- **tested** (23): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-HERC-0001`, `MVS-JCL-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `MVS-TSO-0004`, `MVS-TSO-0005`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
+- **tested** (24): `CF-2026-002`, `CF-2026-003`, `ECO-0007`, `ECO-0008`, `ECO-0009`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-HERC-0001`, `MVS-JCL-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-SSI-0001`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `MVS-TSO-0004`, `MVS-TSO-0005`, `PM-2026-001`, `PM-2026-002`, `PM-2026-003`, `PM-2026-004`
 - **source** (4): `ECO-0004`, `ECO-0006`, `MVS-ENC-0001`, `UFSD-ADR-0001`
+- **inferred** (1): `MVS-PROT-0001`
 
 ## Reference material (`sources/`)
 
@@ -58,16 +61,17 @@ Catalogue entries, not documents — no front matter, cited by `SRC-` id.
 
 ## By project
 
-- **brexx370**: `MVS-LNK-0001`, `MVS-TSO-0003`
+- **brexx370**: `ECO-0009`, `MVS-LNK-0001`, `MVS-TSO-0003`
 - **cc370**: `ECO-0003`, `PM-2026-001`, `PM-2026-002`
 - **ftpd**: `ECO-0007`, `ECO-0008`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`
 - **httpd**: `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-ENC-0001`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `PM-2026-002`
 - **httplua**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`
-- **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `MVS-ENC-0001`, `MVS-TSO-0003`, `PM-2026-001`
-- **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
-- **mbt**: `ECO-0007`, `MVS-HERC-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-TSO-0004`, `MVS-TSO-0005`
+- **httprexx**: `ECO-0002`, `ECO-0003`, `ECO-0006`, `ECO-0009`, `MVS-ENC-0001`, `MVS-TSO-0003`, `PM-2026-001`
+- **libc370**: `CF-2026-001`, `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0008`, `ECO-0009`, `MVS-PROT-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`
+- **mbt**: `ECO-0007`, `ECO-0009`, `MVS-HERC-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-TSO-0004`, `MVS-TSO-0005`
 - **mvs38src**: `CF-2026-002`, `CF-2026-003`, `MVS-BLDL-0001`, `MVS-DASD-0001`, `MVS-JCL-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003`, `MVS-SMP-0004`, `PM-2026-003`
 - **mvsmf**: `ECO-0001`, `ECO-0002`, `ECO-0004`, `ECO-0005`, `ECO-0006`, `ECO-0007`, `ECO-0008`, `MVS-DASD-0001`, `MVS-ENC-0001`, `MVS-LNK-0001`, `MVS-SMP-0003`, `MVS-SSI-0001`, `PM-2026-003`, `UFSD-ADR-0001`
-- **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-SSI-0001`
-- **rexx370**: `CF-2026-002`, `CF-2026-003`, `ECO-0003`, `ECO-0005`, `ECO-0007`, `MVS-BLDL-0001`, `MVS-LNK-0001`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `PM-2026-001`, `PM-2026-002`, `PM-2026-004`
-- **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-LNK-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `UFSD-ADR-0001`
+- **nsf370**: `ECO-0001`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-PROT-0001`, `MVS-SSI-0001`
+- **oftpd**: `ECO-0009`, `MVS-HERC-0001`, `MVS-PROT-0001`
+- **rexx370**: `CF-2026-002`, `CF-2026-003`, `ECO-0003`, `ECO-0005`, `ECO-0007`, `ECO-0009`, `MVS-BLDL-0001`, `MVS-LNK-0001`, `MVS-SMP-0004`, `MVS-SMP-0005`, `MVS-TSO-0001`, `MVS-TSO-0002`, `MVS-TSO-0003`, `PM-2026-001`, `PM-2026-002`, `PM-2026-004`
+- **ufsd**: `CF-2026-001`, `ECO-0001`, `ECO-0002`, `ECO-0003`, `ECO-0004`, `ECO-0005`, `ECO-0007`, `MVS-LNK-0001`, `MVS-PROT-0001`, `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SSI-0001`, `UFSD-ADR-0001`
