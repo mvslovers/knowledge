@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-18 | inbox `2026-09-25-ihbinnra-bpam-reader.md` — rexx370's BPAM exec reader (rexx370#230, PR #232), JOB01197 on MVS/CE LAB; every claim re-derived from the artefacts: `FIND.asm`, `IHBINNRA.asm`, `ieziob.asm`, libc370 `@@aread.asm`, rexx370 `asm/irxbpam.asm` | `MVS-FIND-0001`, `MVS-BSAM-0001`, `MVS-BSAM-0002`, `MVS-OPEN-0001` | `MVS-BLDL-0001` (pointer to `MVS-FIND-0001`), `MVS-JCL-0001` (`related:` → `MVS-BSAM-0001`) | none |
 | 2026-10-18 | oftpd session — TSTPROT and TSTSVC in a throwaway MVS/CE container (oftpd#15 closed, #16 measured; oftpd `internals/xmem.md` section 12) | none | `MVS-PROT-0001` (**measured**: key-8 access to subpool 241 answers CC 1, fetch yes / store no, against a key-8 heap control at CC 0; the granularity stays open and a passive scan cannot close it; `verified_on` 2026-10-18, MVS/CE; status stays `inferred` because the MVCK claim itself is still unmeasured) | none |
 | 2026-10-18 | oftpd session — Hercules (hyperion) `control.c`, the `E501 test_protection` handler, read while writing the oftpd#15 probe | none | `MVS-PROT-0001` (**TPROT is privileged** — `PRIV_CHECK`; the key comes from `effective_addr2 & 0xF0`, not from the PSW; the CC order now has a source; the consequence that an unauthorized caller can never check its own access) | none |
 | 2026-10-18 | oftpd session — an ecosystem-wide as370 return-code census: clean clones of 13 projects' HEADs built with a logging shim as `MBT_AS` and first on `PATH`, plus a column-72 positive control (as370 1.6.3 802dde1, mbt 3.0.0-dev 436396f) | none | `ECO-0009` (what an rc-4 deck loses, measured: 4 bytes of text against 2; the 818/0 census; the `.s`-vs-`.asm` scope line; the CRLF miscount; `verified_on` → 2026-10-18; filed as mvslovers/mbt#286, the gating decision stays **open**) | none |
@@ -20,6 +21,55 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-18 — the BPAM reader's three observations, and the one that was already in
+
+The inbox item sat untracked since 2026-09-25 and was never committed, so it
+existed on one machine only. Three observations, and they did not all survive
+contact with the KB in the shape they were written.
+
+**Observation 1 claimed to precise `MVS-BLDL-0001`** — that its rule
+"register notation does not work" was too broad. It is not: that correction
+had already landed the *same day* the note was written, through `CF-2026-002`
+and JOB01201, and the document has said "only `(1)` fails" ever since. Taking
+the note at its word would have produced a correction to a sentence that no
+longer exists. **The claim beside a measurement is the part that goes stale,
+and reading the note is not reading the document.**
+
+What *was* new in it is the generalisation: `IHBINNRA` is the inner macro of
+`FIND` as well as `BLDL`, so `FIND …,D` carries the identical trap, and
+`MVS-BLDL-0001` could not say so because it was measured on `BLDL` alone.
+That is now **`MVS-FIND-0001`**, `status: source` — the expansion is read in
+`FIND.asm` and `IHBINNRA.asm`, but no job has yet run `FIND …,(1),D` and
+watched it fail.
+
+Reading the macro also narrowed the rule the note states. The note says
+"registers 0 and 1 are dangerous for either operand"; the expansion says the
+single dangerous case is **the second operand in R1**. `(0)` as the second
+operand is safe because `.CHKB` exits on it and leaves a preloaded R0 alone,
+and R0 as the *first* operand is safe because it is copied into R1 before
+anything else happens. The conservative habit stays right for code; the fact
+is narrower, and the document carries both with the difference named.
+
+**Observations 2 and 3 were new and are now `tested`**, both from JOB01197:
+
+- **`MVS-BSAM-0001`** — a short block's length is `DCBBLKSI` minus the CSW
+  residual count, the halfword at `IOB+14`, with the IOB reached through
+  `DECB+16`. The note's offsets check out against `ieziob.asm`: `IOBCSW` is
+  `0CL7` at +9, so `IOBCSW+5` really is +14. libc370's `@@AREAD` does exactly
+  this, which is where the pattern came from.
+- **`MVS-BSAM-0002`** — `EODAD` and `SYNAD` are entered from `CHECK` with
+  R2–R13 untouched, and only `SYNAD` returns; `EODAD` branches into the
+  caller's own code and never comes back to the instruction after the
+  `CHECK`.
+- **`MVS-OPEN-0001`** — split out of observation 3, which covered two topics.
+  `OPEN` on a missing DD writes `IEC130I` and returns with `DCBOFOPN` off
+  rather than abending, so the bit is the only reliable test.
+
+No conflicts. Nothing in the KB contradicted the new material; the one
+apparent contradiction was the note being three weeks behind the document it
+meant to correct. `inbox/` is down to the one `2026-10-17` item, which is
+held back pending a measurement.
 
 ## 2026-10-18 — the CSA question is measured, and the scan that nearly answered it wrongly
 

@@ -15,7 +15,7 @@ sources:
 verified_on: 2026-09-25
 applies_to: [rexx370, mvs38src]
 tags: [bldl, svc18, bpam, directory, pds, rc4, macro, ihbinnra, linklist, steplib, gotcha]
-related: [CF-2026-002, CF-2026-003, PM-2026-001, MVS-LNK-0001]
+related: [CF-2026-002, CF-2026-003, PM-2026-001, MVS-LNK-0001, MVS-FIND-0001]
 ---
 
 ## Symptom
@@ -59,6 +59,11 @@ BLDL then reads its list header from address 0 and fills in nothing.
 The assembler accepts `(1)` without complaint. IBM's own callers use the
 symbolic form throughout — `IKJEBECI:320` (`BLDL 0,BLDLIST`),
 `IKJEBESA:1640` (`BLDL SADCB,SABLDL`).
+
+**`BLDL` is not the only macro with this trap.** `FIND` expands through the
+same `IHBINNRA` call and loses an operand passed in R1 identically —
+`MVS-FIND-0001`, which also states the rule the expansion actually imposes:
+only the *second* operand in R1 is lost, and `(0)` is safe.
 
 ## Second trap in the same list: entry length
 

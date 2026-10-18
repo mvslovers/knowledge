@@ -9,7 +9,7 @@ sources:
 verified_on: 2026-09-10
 applies_to: [mvs38src]
 tags: [jcl, dcb, blksize, concatenation, syslib, bsam, ifo261, wrng-len-record, assembler, ifox00, sysgen]
-related: [MVS-DASD-0001]
+related: [MVS-DASD-0001, MVS-BSAM-0001]
 ---
 
 ## The rule
