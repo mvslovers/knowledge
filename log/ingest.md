@@ -49,8 +49,27 @@ endings have been looked at, and the `awk 'length($0) >= 72'` defence the entry
 recommends cannot tell the three apart. That is now in the document, because
 the defence is the thing a reader will actually run.
 
-The gating decision itself stays **open** and belongs to the maintainer. It is
-filed as mvslovers/mbt#286 with the control and the table; no session flips it.
+**Correction, same day, before anything acted on it.** The paragraph above
+originally ended "the gating decision stays open and belongs to the
+maintainer". It does not: the MBT session pointed at **mvslovers/mbt#278**
+(2026-10-17), where the maintainer's position is recorded — rc 4 is a warning,
+as on MVS, and he is against failing the build on it. I read that issue myself
+before accepting the correction; it carries the same IFO026/BALR/S0C1 case and
+the same pipe trap as `ECO-0009`, so the two were written the same day in
+ignorance of each other.
+
+So `ECO-0009` had recorded a question as open when the answer existed, and I
+had reported it to the maintainer that way — which invited him to decide
+something he had already decided, without either of us seeing it was a
+reversal. The entry now names #278 in its sources, says the question was
+answered on 2026-10-17, and states that the census is **evidence against a
+decided question, not grounds to treat it as unmade**. mbt#286 stays open as
+that evidence and is cross-linked; no session touches `build.go`.
+
+The general shape is the one the root `CLAUDE.md` names: the measurement was
+sound and checked twice, and the sentence beside it — "this is open" — was
+carried over from a document rather than from a source. It was caught by the
+session that owns the repo, which is the division that keeps working.
 
 ## 2026-10-18 — the SVC review's four observations, and one near-conflict
 

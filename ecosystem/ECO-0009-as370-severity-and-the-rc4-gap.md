@@ -8,6 +8,7 @@ sources:
   - "mbt internal/build/build.go — the as step fails at rc >= 8 and deletes the object deck; a cc370 step fails at any rc != 0 (re-measured by the MBT session the same day)"
   - "httprexx asm/htrxterm.asm — the IFO026 case that cost a BALR and ended S0C1"
   - "an IFOX00 listing showing IFO213 zeroing an instruction: `000202 0000 0000` where `58F0 F098` belongs"
+  - "mvslovers/mbt#278 (2026-10-17) — the maintainer's position: rc 4 is a warning, as on MVS, and he is against failing the build on it"
   - "the ecosystem-wide as370 return-code census of 2026-10-18: 818 assemblies in clean clones of 13 projects' HEADs, built with a logging shim as MBT_AS and first on PATH, with a column-72 positive control (mvslovers/mbt#286)"
 verified_on: 2026-10-18
 applies_to: [oftpd, httprexx, rexx370, brexx370, libc370, mbt]
@@ -58,8 +59,18 @@ awk 'length($0) >= 72' file.asm      # must print nothing
 
 Run it over hand-written assembler before believing a clean build. Whether
 rc 4 should fail a build at all is a maintainer decision, not a judgement call
-for a session. It is **open**: no session may flip it, and no session should
-record it as decided without the maintainer's own word.
+for a session.
+
+**It is decided, and this document said otherwise for a day.** The maintainer's
+position is recorded in **mvslovers/mbt#278** (2026-10-17): rc 4 is a warning,
+as on MVS, and he is **against failing the build on it**. That issue was opened
+the same day as this entry and neither knew about the other, so this document
+was written saying the question was "open" and "waiting on the maintainer" when
+his word already existed. Corrected 2026-10-18. `[source: mvslovers/mbt#278]`
+
+The measurement in the next section was taken afterwards and is **new evidence
+against a decided question, not grounds to treat it as unmade**. Anyone citing
+it has to cite #278 with it.
 
 ## What an rc-4 deck actually loses, and what the gate would cost
 
@@ -121,9 +132,17 @@ sequence numbers in columns 73-80 behind a real marker at 72. Byte position is
 not column position until the line endings have been looked at, and
 `awk 'length($0) >= 72'` says nothing about which of the three a hit is.
 
-**So the gate change is free today** — that is the measurement, and it is all
-it is. Whether to make it is still the maintainer's, and it is open: filed as
-**mvslovers/mbt#286** with the control and the table.
+**So the gate change would be free today** — that is the measurement, and it is
+all it is. It reopens nothing: the maintainer decided against the abort in
+**mbt#278**, and this census is filed as **mbt#286** as evidence he may weigh
+against that decision, not as grounds to treat it as unmade. No session flips
+the gate, and no session should read "free" as "therefore do it".
+
+What #278 does leave room for, and what this makes cheaper to argue, is making
+the warning harder to miss *without* aborting — a count of assembler warnings
+in `mbt build`'s closing line, or a WARNING marker on the step. At 818
+assemblies and zero non-zero return codes, such a line would read `0` today, so
+any non-zero would mean something the moment it appeared.
 
 ## `IFO213` zeroes the instruction
 
