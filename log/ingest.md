@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-18 | oftpd session — TSTPROT and TSTSVC in a throwaway MVS/CE container (oftpd#15 closed, #16 measured; oftpd `internals/xmem.md` section 12) | none | `MVS-PROT-0001` (**measured**: key-8 access to subpool 241 answers CC 1, fetch yes / store no, against a key-8 heap control at CC 0; the granularity stays open and a passive scan cannot close it; `verified_on` 2026-10-18, MVS/CE; status stays `inferred` because the MVCK claim itself is still unmeasured) | none |
 | 2026-10-18 | oftpd session — Hercules (hyperion) `control.c`, the `E501 test_protection` handler, read while writing the oftpd#15 probe | none | `MVS-PROT-0001` (**TPROT is privileged** — `PRIV_CHECK`; the key comes from `effective_addr2 & 0xF0`, not from the PSW; the CC order now has a source; the consequence that an unauthorized caller can never check its own access) | none |
 | 2026-10-18 | oftpd session — an ecosystem-wide as370 return-code census: clean clones of 13 projects' HEADs built with a logging shim as `MBT_AS` and first on `PATH`, plus a column-72 positive control (as370 1.6.3 802dde1, mbt 3.0.0-dev 436396f) | none | `ECO-0009` (what an rc-4 deck loses, measured: 4 bytes of text against 2; the 818/0 census; the `.s`-vs-`.asm` scope line; the CRLF miscount; `verified_on` → 2026-10-18; filed as mvslovers/mbt#286, the gating decision stays **open**) | none |
 | 2026-10-18 | oftpd session — inbox `2026-10-17-oftpsvc-review-vier-beobachtungen.md` (review of `oftpd/asm/oftpsvc.asm`): as370 1.6.3 host runs, IBM `IHAACEE.asm` read by the libc370 session, mbt `internal/build/build.go` | `MVS-PROT-0001`, `ECO-0009` | `ECO-0008` (`ACEEUSER` is length-prefixed; libc370 2.18.0 carries the subfields), `ECO-0004` (`related:` link only -- its `IEAVSY50` item is **held back pending a measurement**, see below) | none |
@@ -19,6 +20,39 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-18 — the CSA question is measured, and the scan that nearly answered it wrongly
+
+`MVS-PROT-0001` rested on a premise it could not check: that key-0 CSA is not
+fetch-protected, so a key-8 program may read it. Measured now on MVS/CE in a
+throwaway container, with `TPROT` asking about key 8 from an authorized
+program: subpool 241 and a `__loadhi` module area both answer **CC 1** —
+fetch permitted, store refused — against an ordinary key-8 heap control at
+CC 0. The control is load-bearing: without it CC 1 would be a number with no
+scale.
+
+So the premise holds, and with it the document's opening claim: an
+unauthorized caller really can read key-0 CSA, so moving data under the
+caller's key really does not keep a forged pointer out of it.
+
+**The status stays `inferred` even so.** What was measured is the premise;
+the headline statement about `MVCK`'s key operand is still an architecture
+claim nobody here has run. Marking the document `tested` would transfer the
+confidence of the measurement onto the sentence it supports, which is the
+move §6 exists to prevent. The body now carries a status per claim instead.
+
+**And the granularity scan in the same job produced a false finding first.**
+Its grid started at an arbitrary `getmain()` address, so every probe sat at
+that address modulo 2048; the test for a boundary at an odd 2 K could not be
+true for any input, and it duly reported "no 2K-only boundary seen" while the
+assertion above it passed. Aligned, the transitions are clean — and the
+conclusion is now *NOT SETTLED* rather than "4 K", because MVS allocates in
+pages and therefore never produces that boundary either way. An absence is
+not evidence here; only a positive would have been.
+
+Both of those are the same shape the root `CLAUDE.md` names, and this time it
+reached a measurement: the number was real, the sentence beside it was not,
+and nothing in the run would have flagged it.
 
 ## 2026-10-18 — TPROT is privileged, which is a design fact and not a test detail
 

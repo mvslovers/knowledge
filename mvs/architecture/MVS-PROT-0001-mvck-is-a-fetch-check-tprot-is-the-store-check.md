@@ -8,7 +8,14 @@ sources:
   - "as370 1.6.3 — TPROT assembles as SSE: `TPROT 4(5),8(9)` -> `E501 5004 9008` (host measurement)"
   - "Hercules (hyperion) control.c, the E501 `test_protection` handler — `PRIV_CHECK(regs)`, the key taken from `effective_addr2 & 0xF0`, and the CC order fetch-protected -> 2 / store-protected -> 1 / else 0 / translation exception -> 3 (read 2026-10-18)"
   - "Hercules (hyperion) feat370.h:30 FEATURE_2K_STORAGE_KEYS, feature.h:397-407 STORAGE_KEY_PAGESIZE 2048 vs 4096 — the key granularity the emulator builds for S/370 mode (read 2026-10-18)"
+  - "oftpd TSTPROT in a throwaway MVS/CE container, 2026-10-18 (oftpd#15, internals/xmem.md section 12): TPROT run authorized against subpool 241, a __loadhi module area and a key-8 heap control"
   - "IBM Principles of Operation — the architecture statements below come from the reviewing session's reading of it; the manual is NOT held locally and is not catalogued in sources/, so nothing here is cited to a page"
+# Still `inferred`, deliberately: the headline claim about MVCK is an
+# architecture statement nobody here has measured. What IS measured --
+# the fetch-protection state of subpool 241 -- is its premise, and the
+# body marks every part with its own status.
+verified_on: 2026-10-18
+verified_platforms: ["MVS/CE"]
 applies_to: [oftpd, nsf370, ufsd, libc370]
 tags: [storage-key, key-granularity, protection, mvck, mvcp, mvcs, tprot, fetch-protection, svc, cross-address-space, key0, csa]
 related: [ECO-0004]
@@ -116,24 +123,69 @@ oftpd's private SVC uses exactly this: `TPROT` on both ends of every caller
 range before the request claims a slot, so a forged pointer is refused with a
 return code instead of faulting in key 0 (oftpd `internals/xmem.md`).
 
-## What this document does not have
+## Measured: CSA is readable from key 8 and not writable
+
+Run 2026-10-18 on MVS/CE in a throwaway container (oftpd `TSTPROT`,
+oftpd#15). `TPROT` issued from an authorized program, asking about **key 8**:
+
+| Storage | CC |
+|---|---|
+| ordinary key-8 heap — the control | **0** store and fetch |
+| `getmain(9536, 241)` | **1** fetch only |
+| a module area from `__loadhi()` | **1** fetch only |
+
+`[tested: MVS/CE, 2026-10-18]` The control is what makes the other two
+readable: a control that does not answer CC 0 invalidates the run.
+
+So for key-0 CSA from subpool 241: **a key-8 fetch is permitted and a key-8
+store is not.** That is the fetch-protection state this document had to leave
+open, and it is the state the opening claim depends on — an unauthorized
+caller really can read key-0 CSA, so `MVCK` under the caller's key really
+does not keep a forged pointer out of it.
+
+Two consequences for anyone designing with CSA. A service may let an
+unauthorized client read a published anchor directly, which is how discovery
+through the SSCT works at all. And nothing an unauthorized caller does can
+corrupt that anchor, so the integrity of a control block in subpool 241 does
+not rest on hiding its address.
+
+## The granularity is still open, and a passive scan cannot close it
+
+A scan of ±32 K around the block in 2048-byte steps, aligned to the step,
+found key transitions at `00A8D000`, `00A90000` and `00A93000` — all three
+4 K aligned, none at an odd 2 K. **That settles nothing.** MVS hands out
+storage in pages, so it never creates a boundary at an odd 2 K even on
+hardware whose keys are 2 K: the absence is what *both* candidates produce.
+A positive would have been decisive; an absence is not evidence here.
+`[tested: MVS/CE, 2026-10-18]`
+
+Settling it needs an active probe — `SSK` on one half of a page and `ISK` on
+the other — which no design in the ecosystem currently needs, because the
+≤ 2048-byte rule above is sound under either value.
+
+**The first run of that scan reported "no 2K-only boundary" as a finding, and
+it was an artefact.** The grid started at an arbitrary `getmain()` address, so
+every probe sat at that address modulo 2048 and the test for a boundary at an
+odd 2 K could not be true for any input whatsoever — while the assertion above
+it passed. Worth repeating here because it is the shape the root `CLAUDE.md`
+warns about and it survived into a measurement: the number was real and the
+sentence beside it was not.
+
+## What this document still does not have
 
 **No page citation.** The Principles of Operation is not held locally and is
 not in `sources/` — the architecture statements above are second-hand, which
-is why this document is `inferred` and not `manual`. Treat the condition-code
-table as a working contract, not as a quotation.
+is why this document is not `manual`. Treat the condition-code table as a
+working contract, not as a quotation.
 
-**No measurement on MVS either.** Nothing here has been run on a machine
-except the assembly of the instruction; what the 2026-10-18 additions bring
-is a reading of the *emulator's* source, which is a stronger source than an
-inference and a weaker one than a run. The cheap experiment that would settle both the
-`TPROT` codes and the fetch-protection question in one go is **oftpd#15**: a
-key-8 program probing (1) storage from `getmain(size, 241)`, (2) a module
-loaded there by `__loadhi()`, (3) ordinary key-8 heap as the control. A
-control that does not answer CC 0 invalidates the run, and a probe at +2048
-across a block boundary settles the key granularity in the same job. When
-that runs, this document becomes `tested`, and the fetch-protection state of
-subpool 241 and the 2 K/4 K question get recorded here.
+**MVS/CE only.** TK5 is unverified for the CSA readings above, and nothing
+here was run on real hardware.
+
+**`MVCK` itself is still unmeasured.** The fetch-protection reasoning is now
+measured, so the premise of the opening claim holds — but nobody has run an
+`MVCK` across keys and watched it succeed. The claim stands on the measured
+premise plus the architecture statement, not on an observation of the
+instruction.
 
 ## Why it was nearly missed
 
