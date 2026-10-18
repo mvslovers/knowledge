@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-18 | oftpd session — an ecosystem-wide as370 return-code census: clean clones of 13 projects' HEADs built with a logging shim as `MBT_AS` and first on `PATH`, plus a column-72 positive control (as370 1.6.3 802dde1, mbt 3.0.0-dev 436396f) | none | `ECO-0009` (what an rc-4 deck loses, measured: 4 bytes of text against 2; the 818/0 census; the `.s`-vs-`.asm` scope line; the CRLF miscount; `verified_on` → 2026-10-18; filed as mvslovers/mbt#286, the gating decision stays **open**) | none |
 | 2026-10-18 | oftpd session — inbox `2026-10-17-oftpsvc-review-vier-beobachtungen.md` (review of `oftpd/asm/oftpsvc.asm`): as370 1.6.3 host runs, IBM `IHAACEE.asm` read by the libc370 session, mbt `internal/build/build.go` | `MVS-PROT-0001`, `ECO-0009` | `ECO-0008` (`ACEEUSER` is length-prefixed; libc370 2.18.0 carries the subfields), `ECO-0004` (`related:` link only -- its `IEAVSY50` item is **held back pending a measurement**, see below) | none |
 | 2026-10-18 | oftpd session — the SVC 237 install/restore run on m38x (MVSCE-EXP): `GET /cgi-bin/tasks/syslog` at `mvsdev.lan:8383`, `mbt target console m38x`, oftpd `internals/xmem.md` section 10 | none | `MVS-HERC-0001` (the HTML `tasks/syslog` route; `msgcount` counts messages and the reader's own `D` commands fill the window — answers part of its open "Not measured" bullet; `D A,<jobname>` invalid; the m38x port pair; `verified_on` → 2026-10-18, `applies_to` + `oftpd`) | none |
 | 2026-09-26 | rexx370 session — BREXX/370 coexistence on MVSCE-LAB (JOB01315/01316, fix PR #244, JOB01319/01324/01333, foreground run); brexx370 source 794b701 (rxinit.hlasm, rxterm.hlasm, #ENVCTX) | `MVS-TSO-0003` | `MVS-TSO-0001`, `MVS-TSO-0002` (`related:` → `MVS-TSO-0003`) | none |
@@ -17,6 +18,39 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-18 — what an as370 rc 4 actually costs, measured across the ecosystem
+
+`ECO-0009` already recorded that mbt lets rc 4 pass and that `IFO026` lives in
+that band. What it could not say was what an rc-4 deck loses, or what closing
+the gap would cost. Both are now measured, and the entry carries them.
+
+**The loss is an instruction, and the deck looks fine.** Two files of the same
+four statements, differing only in a trailing comment reaching column 72:
+`clean.o` has 4 bytes of text, `warn.o` has 2. The `BR 14` is simply absent.
+That reproduces the shape of the httprexx `BALR`/`S0C1` case without waiting
+for it to recur, which is what moves the entry from a worked example to a
+property.
+
+**Closing the gap would cost nothing today**: 818 as370 invocations across 13
+projects, none with a non-zero return code. The number is only worth something
+because of two controls. A column-72 file through the same shim logged rc 4 —
+without it, "zero" would be the exit-0-and-plausible answer the root
+`CLAUDE.md` warns about. And interception was checked arithmetically: libc370's
+build prints `737 .s + 29 .asm` and the shim logged exactly 766 calls, so
+nothing bypassed it by an absolute path.
+
+**One correction to my own first pass, and it is the useful part.** The static
+column-72 scan first reported 474 suspicious lines. 320 of them were a `\r`
+from CRLF files sitting at byte 72 of a 71-character line, and most of the rest
+were brexx370's card sequence numbers in columns 73-80 behind a real
+continuation marker. Byte position is not column position until the line
+endings have been looked at, and the `awk 'length($0) >= 72'` defence the entry
+recommends cannot tell the three apart. That is now in the document, because
+the defence is the thing a reader will actually run.
+
+The gating decision itself stays **open** and belongs to the maintainer. It is
+filed as mvslovers/mbt#286 with the control and the table; no session flips it.
 
 ## 2026-10-18 — the SVC review's four observations, and one near-conflict
 

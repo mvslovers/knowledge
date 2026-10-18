@@ -8,7 +8,8 @@ sources:
   - "mbt internal/build/build.go — the as step fails at rc >= 8 and deletes the object deck; a cc370 step fails at any rc != 0 (re-measured by the MBT session the same day)"
   - "httprexx asm/htrxterm.asm — the IFO026 case that cost a BALR and ended S0C1"
   - "an IFOX00 listing showing IFO213 zeroing an instruction: `000202 0000 0000` where `58F0 F098` belongs"
-verified_on: 2026-10-17
+  - "the ecosystem-wide as370 return-code census of 2026-10-18: 818 assemblies in clean clones of 13 projects' HEADs, built with a logging shim as MBT_AS and first on PATH, with a column-72 positive control (mvslovers/mbt#286)"
+verified_on: 2026-10-18
 applies_to: [oftpd, httprexx, rexx370, brexx370, libc370, mbt]
 tags: [as370, assembler, exit-code, severity, ifo026, ifo196, ifo213, column-72, continuation, mbt, build-gating]
 related: []
@@ -59,6 +60,70 @@ Run it over hand-written assembler before believing a clean build. Whether
 rc 4 should fail a build at all is a maintainer decision, not a judgement call
 for a session. It is **open**: no session may flip it, and no session should
 record it as decided without the maintainer's own word.
+
+## What an rc-4 deck actually loses, and what the gate would cost
+
+Measured 2026-10-18, as370 1.6.3 (802dde1). Two files of the same four
+statements, differing only in a trailing comment that reaches column 72 on the
+`BALR` line:
+
+```
+clean.asm -> rc 0 -> clean.o: OS/360 object deck -- 1 section(s), 4B text
+warn.asm  -> rc 4 -> warn.o:  OS/360 object deck -- 1 section(s), 2B text
+```
+
+`[tested]` **Four bytes of text against two**: the `BR 14` is gone from the
+deck, the deck is otherwise well-formed, and nothing downstream can tell. That
+is the httprexx `BALR` in miniature, and it makes the *shape* of the hazard
+reproducible without waiting for it to happen again.
+
+as370's own diagnostic is explicit — *"This card was consumed as a
+continuation and the statement on it discarded (IFOX00 IFO026, severity 4)"* —
+and mbt prints it: `b.logs` is the same writer `b.say` uses, so the text
+reaches the build output on every build. It simply does not stop anything.
+**So the problem is not visibility, it is that nothing acts on it.**
+
+**Nothing in the ecosystem assembles at rc 4 today.** A census over clean
+clones of each project's HEAD, built with a logging shim as `MBT_AS` and first
+on `PATH`:
+
+| Project | as370 invocations | rc != 0 |
+|---|---|---|
+| libc370 | 766 | 0 |
+| brexx370 | 20 | 0 |
+| rexx370 (`make` / `make test`) | 13 / 8 | 0 |
+| nsf370 | 9 | 0 |
+| oftp370, httprexx | 1 each | 0 |
+| ufsd, ftpd, httpd, httplua, zlib370, lstring370 | 0 | 0 |
+| **total** | **818** | **0** |
+
+`[tested]` The zero is a measurement and not an exit-0-and-plausible number:
+the positive control above went through the same shim and logged rc 4. And the
+shim did intercept everything — libc370's build prints `[libc] 737 .s + 29
+.asm` and the shim logged exactly 766 calls.
+
+Two scope lines that are easy to get wrong:
+
+- **mbt hands `.s` to cc370 and only `.asm` to as370**, so the rc-4 question is
+  about `.asm` alone. libc370 builds with its own make and routes both through
+  as370, which is where 766 comes from rather than 29.
+- cc370's own 57 `.asm` files are the toolchain's test corpus and deliberately
+  contain malformed input. They are not ecosystem code and were not counted.
+
+The static check agrees with the census: across those projects there are 115
+lines with a non-blank in column 72 and **every one is a deliberate
+continuation marker** (`X`, `x`, `*`, `C`, `@`) on a code line.
+
+A first count of 474 was wrong and the way it was wrong is worth keeping. 320
+of those were a **`\r` from CRLF files** sitting at byte 72 of a 71-character
+line (libc370 is largely CRLF), and most of the rest were brexx370's card
+sequence numbers in columns 73-80 behind a real marker at 72. Byte position is
+not column position until the line endings have been looked at, and
+`awk 'length($0) >= 72'` says nothing about which of the three a hit is.
+
+**So the gate change is free today** — that is the measurement, and it is all
+it is. Whether to make it is still the maintainer's, and it is open: filed as
+**mvslovers/mbt#286** with the control and the table.
 
 ## `IFO213` zeroes the instruction
 
