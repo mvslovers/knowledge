@@ -6,6 +6,7 @@ platform: [mvs38j]
 sources:
   - "oftpd asm/oftpsvc.asm — the caller-range validation of the private SVC, and the review that raised this (oftpd#1, PRs #5/#6, 2026-10-17)"
   - "as370 1.6.3 — TPROT assembles as SSE: `TPROT 4(5),8(9)` -> `E501 5004 9008` (host measurement)"
+  - "Hercules (hyperion) feat370.h:30 FEATURE_2K_STORAGE_KEYS, feature.h:397-407 STORAGE_KEY_PAGESIZE 2048 vs 4096 — the key granularity the emulator builds for S/370 mode (read 2026-10-18)"
   - "IBM Principles of Operation — the architecture statements below come from the reviewing session's reading of it; the manual is NOT held locally and is not catalogued in sources/, so nothing here is cited to a page"
 applies_to: [oftpd, nsf370, ufsd, libc370]
 tags: [storage-key, key-granularity, protection, mvck, mvcp, mvcs, tprot, fetch-protection, svc, cross-address-space, key0, csa]
@@ -61,9 +62,17 @@ established here:
 - S/370 associates a key with each **2 K** block.
 - 370-XA and later use **4 K**.
 
-`[inferred, and the one that matters is unmeasured]` MVS 3.8j runs on S/370,
-which argues for 2 K — in which case a range of 2049 to 4096 bytes spans
-three 2 K blocks and **the middle one goes unchecked by a two-ended probe**.
+**The emulator we run on builds the 2 K case.** Hercules defines
+`FEATURE_2K_STORAGE_KEYS` for S/370 mode `[source: hyperion/feat370.h:30]`,
+and under it `STORAGE_KEY_PAGESIZE 2048` / `STORAGE_KEY_BYTEMASK 0x000007FF`
+— against 4096 / 0x00000FFF in the `#else`
+`[source: hyperion/feature.h:397-407]`. That is a reading of the emulator's
+source, not a measurement on MVS and not the architecture: it says what the
+machine our systems actually run on does.
+
+So 2 K is the value to design against, and under it a range of 2049 to 4096
+bytes spans three blocks with **the middle one unchecked by a two-ended
+probe**.
 That is precisely the silent failure this document exists to prevent, so the
 rule to follow is the one that is safe under either value:
 

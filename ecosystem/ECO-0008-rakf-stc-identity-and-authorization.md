@@ -180,11 +180,14 @@ Whoever reads the identity out of an ACEE reads a **length byte followed by
 eight characters**, not a nine-byte name. `IHAACEE` has it as three fields:
 
 ```
-ACEEUSER DS    0CL9        the pair, addressed as one
-ACEEUSRL DS    AL1         length
-ACEEUSRI DS    CL8         the userid itself
+ACEEUSER DS    0CL9                 USERID INFORMATION
+ACEEUSRL DS    AL1                  USERID LENGTH
+ACEEUSRI DS    CL8                  USERID
 ```
-`[source: macros/maclib/IHAACEE.asm:53-55]`
+Verbatim, IBM's own comments.
+`[source: mvs38-ibmsrc/macros/maclib/IHAACEE.asm:53-55]` The group name
+below it has the same shape — `ACEEGRP DS 0CL9` / `ACEEGRPL` / `ACEEGRPN`,
+lines 56-58.
 
 libc370 used to fold the three into a single `char aceeuser[9]`
 (`ihaacee.h:22`), which is what invites a flat eight-byte `MVC` from offset
@@ -196,12 +199,25 @@ in a union beside the unchanged `aceeuser[9]`/`aceegrp[9]`; `sizeof(ACEE)`
 stays 144, and the offsets X'14'/X'15'/X'1D'/X'1E' were checked with cc370.
 `[source: libc370 ihaacee.h, 2.18.0]`
 
-`ACEEUSRI` is treated as blank-padded to eight by IBM's own code and by RAKF:
-`IEFSMFIE.asm:395`, `HASPSSSM.asm:9055`, and RAKF's `ICHSFR00.hlasm:527`
-comparing against `=CL8'STC'`. `[source]` **Three consumers and no producer:**
-the RACINIT path that *builds* the ACEE was not read, so "always blank-padded"
-is inferred from how the field is consumed, not from how it is written.
-`[inferred]`
+**Only one of the three consumers actually depends on the padding**, and the
+difference is worth keeping straight. IBM's code *moves* the field as a fixed
+eight bytes and would copy whatever is in it:
+
+```
+MVC   ZERO(8,R15),ACEEUSRI     GET USER ID            IEFSMFIE.asm:395
+MVC   RIDUSER(8),ACEEUSRI                             HASPSSSM.asm:9055
+```
+
+RAKF *compares* it, and that only matches when the field is blank-padded:
+
+```
+CLC   =CL8'STC',ACEEUSRI  STC?                        ICHSFR00.hlasm:527
+```
+`[source]`
+
+**Three consumers and no producer:** the RACINIT path that *builds* the ACEE
+was not read, so "always blank-padded" rests on RAKF's comparison working in
+practice, not on the code that writes the field. `[inferred]`
 
 ## Consequences
 
