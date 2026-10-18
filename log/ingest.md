@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-18 | oftpd session — Hercules (hyperion) `control.c`, the `E501 test_protection` handler, read while writing the oftpd#15 probe | none | `MVS-PROT-0001` (**TPROT is privileged** — `PRIV_CHECK`; the key comes from `effective_addr2 & 0xF0`, not from the PSW; the CC order now has a source; the consequence that an unauthorized caller can never check its own access) | none |
 | 2026-10-18 | oftpd session — an ecosystem-wide as370 return-code census: clean clones of 13 projects' HEADs built with a logging shim as `MBT_AS` and first on `PATH`, plus a column-72 positive control (as370 1.6.3 802dde1, mbt 3.0.0-dev 436396f) | none | `ECO-0009` (what an rc-4 deck loses, measured: 4 bytes of text against 2; the 818/0 census; the `.s`-vs-`.asm` scope line; the CRLF miscount; `verified_on` → 2026-10-18; filed as mvslovers/mbt#286, the gating decision stays **open**) | none |
 | 2026-10-18 | oftpd session — inbox `2026-10-17-oftpsvc-review-vier-beobachtungen.md` (review of `oftpd/asm/oftpsvc.asm`): as370 1.6.3 host runs, IBM `IHAACEE.asm` read by the libc370 session, mbt `internal/build/build.go` | `MVS-PROT-0001`, `ECO-0009` | `ECO-0008` (`ACEEUSER` is length-prefixed; libc370 2.18.0 carries the subfields), `ECO-0004` (`related:` link only -- its `IEAVSY50` item is **held back pending a measurement**, see below) | none |
 | 2026-10-18 | oftpd session — the SVC 237 install/restore run on m38x (MVSCE-EXP): `GET /cgi-bin/tasks/syslog` at `mvsdev.lan:8383`, `mbt target console m38x`, oftpd `internals/xmem.md` section 10 | none | `MVS-HERC-0001` (the HTML `tasks/syslog` route; `msgcount` counts messages and the reader's own `D` commands fill the window — answers part of its open "Not measured" bullet; `D A,<jobname>` invalid; the m38x port pair; `verified_on` → 2026-10-18, `applies_to` + `oftpd`) | none |
@@ -18,6 +19,33 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-18 — TPROT is privileged, which is a design fact and not a test detail
+
+Found while writing the oftpd#15 probe, by reading the emulator rather than
+reasoning: Hercules' `E501` handler calls `PRIV_CHECK(regs)` right after the
+operand decode, so a problem-state program issuing `TPROT` gets S0C2.
+
+`MVS-PROT-0001` recommended `TPROT` as the store check without saying who may
+issue one. Three things follow, now in the entry:
+
+- The key being tested comes from bits 24-27 of the **second operand's
+  address**, not from the PSW key, and nothing is fetched from that address.
+  So an authorized routine can ask about key 8 without being in key 8 — which
+  is what makes the check usable at all.
+- **An unauthorized caller can never check its own access.** Every such check
+  has to be made by the service on the caller's behalf. A design that expected
+  a client to validate its own pointers before calling has no instrument for
+  it. oftpd's `TPRNG` already works this way, so this confirms rather than
+  changes it.
+- A measurement of the question needs an **APF-authorized job**. The probe
+  I had first described to the MBT session as needing no authority at all
+  would have abended and measured nothing; corrected before it was scheduled.
+
+The condition-code order in the entry also has a source now (the same handler)
+rather than being second-hand along with the rest. The document stays
+`inferred`: a reading of the emulator our systems run on is better than an
+inference and still not a run on MVS, and it says so.
 
 ## 2026-10-18 — what an as370 rc 4 actually costs, measured across the ecosystem
 

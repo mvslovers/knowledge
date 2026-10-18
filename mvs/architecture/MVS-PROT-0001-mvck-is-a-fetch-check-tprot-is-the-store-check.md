@@ -6,6 +6,7 @@ platform: [mvs38j]
 sources:
   - "oftpd asm/oftpsvc.asm — the caller-range validation of the private SVC, and the review that raised this (oftpd#1, PRs #5/#6, 2026-10-17)"
   - "as370 1.6.3 — TPROT assembles as SSE: `TPROT 4(5),8(9)` -> `E501 5004 9008` (host measurement)"
+  - "Hercules (hyperion) control.c, the E501 `test_protection` handler — `PRIV_CHECK(regs)`, the key taken from `effective_addr2 & 0xF0`, and the CC order fetch-protected -> 2 / store-protected -> 1 / else 0 / translation exception -> 3 (read 2026-10-18)"
   - "Hercules (hyperion) feat370.h:30 FEATURE_2K_STORAGE_KEYS, feature.h:397-407 STORAGE_KEY_PAGESIZE 2048 vs 4096 — the key granularity the emulator builds for S/370 mode (read 2026-10-18)"
   - "IBM Principles of Operation — the architecture statements below come from the reviewing session's reading of it; the manual is NOT held locally and is not catalogued in sources/, so nothing here is cited to a page"
 applies_to: [oftpd, nsf370, ufsd, libc370]
@@ -44,10 +45,36 @@ survive one:
 | 2 | no access |
 | 3 | storage not available |
 
-`[inferred]`
+The condition-code order is the emulator's own: it answers **2** when the
+location is fetch-protected against the given key, **1** when it is store-
+protected, **0** otherwise, and **3** on a translation exception.
+`[source: hyperion control.c, test_protection]`
 
 The test to require is **CC 0 under the caller's key**: the range must be
 storable by the caller. `[inferred]`
+
+## TPROT is privileged, and that decides who may ask
+
+`TPROT` is a **privileged instruction** — Hercules checks it with
+`PRIV_CHECK(regs)` immediately after the operand decode in its `E501`
+handler. `[source: hyperion control.c, test_protection]` A problem-state
+program issuing it gets S0C2.
+
+The key it tests is **not** the PSW key: it comes from bits 24-27 of the
+second operand's *address* (`effective_addr2 & 0xF0` in the handler), and
+nothing is fetched from that address. So an authorized routine asks "would a
+key-8 access be permitted here" without being in key 8 — which is exactly
+what a service validating a caller's buffer needs.
+
+**The consequence is a design rule, not a detail.** An unauthorized caller
+can never check its own access, because the only non-faulting way to ask is
+closed to it. So every such check has to be made by the service, on the
+caller's behalf, inside the authorized routine. A design that expected the
+client to validate its own pointers before calling has no instrument to do it
+with.
+
+It also means a measurement of this question needs an APF-authorized job.
+A probe that is written unauthorized measures nothing and abends.
 
 It assembles under as370 1.6.3 as an SSE instruction:
 `TPROT 4(5),8(9)` → `E501 5004 9008`. `[tested: as370 1.6.3, host]`
@@ -96,8 +123,10 @@ not in `sources/` — the architecture statements above are second-hand, which
 is why this document is `inferred` and not `manual`. Treat the condition-code
 table as a working contract, not as a quotation.
 
-**No measurement either.** Nothing here has been run on a machine except the
-assembly of the instruction. The cheap experiment that would settle both the
+**No measurement on MVS either.** Nothing here has been run on a machine
+except the assembly of the instruction; what the 2026-10-18 additions bring
+is a reading of the *emulator's* source, which is a stronger source than an
+inference and a weaker one than a run. The cheap experiment that would settle both the
 `TPROT` codes and the fetch-protection question in one go is **oftpd#15**: a
 key-8 program probing (1) storage from `getmain(size, 241)`, (2) a module
 loaded there by `__loadhi()`, (3) ordinary key-8 heap as the control. A
