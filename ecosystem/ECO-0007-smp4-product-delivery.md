@@ -5,9 +5,9 @@ status: tested
 platform: [mvs38j]
 sources:
   - "GC28-0673-6 — OS/VS System Modification Program (SMP) System Programmer's Guide"
-  - "smptest/doc/SMP-COOKBOOK.md — prototype run 2026-08-08 on mvsdev, SYSMOD TSMP100/USMP001"
-  - "smptest/jcl/smpxinl.jcl, smpxrej.jcl — inline-delivery experiment; mvsdev (MVS/CE) JOB01066/JOB01067, drnmig3a (TK5) JOB00021/JOB00022"
-  - "smptest/jcl/smplist.jcl — LIST syntax probe and SYSMOD inventory, both distributions"
+  - "smptest/doc/SMP-COOKBOOK.md — prototype run 2026-08-08 on mvsdev, SYSMOD TSMP100/USMP001 (source deleted 2026-10-19 with the smptest repo)"
+  - "smptest/jcl/smpxinl.jcl, smpxrej.jcl — inline-delivery experiment; mvsdev (MVS/CE) JOB01066/JOB01067, drnmig3a (TK5) JOB00021/JOB00022 (source deleted 2026-10-19 with the smptest repo)"
+  - "smptest/jcl/smplist.jcl — LIST syntax probe and SYSMOD inventory, both distributions (source deleted 2026-10-19 with the smptest repo)"
   - "mbt/scripts/mbt/distribution.py, mbt/scripts/mbtdist.py — the generator"
   - "ufsd/project.toml [distribution] — the reference declaration"
   - "mvsdev, 2026-08-14 — TFTP100 removal: JOB01078 RESTORE, JOB01079 REJECT, JOB01080 UCLIN"
@@ -116,7 +116,7 @@ inventory carries no information about SVC 244 availability.
   and a SYSMOD carrying a `++JCLIN` contains both. `DD DATA,DLM=` is required,
   and the delimiter must not appear at the start of any card in the payload.
 - `SMP-COOKBOOK.md` F2 gives the card limit as column 71, and
-  `smptest/scripts/smpspike.py` enforces it. It is **72** — strict enough that
+  `smptest/scripts/smpspike.py` enforced it (repo deleted 2026-10-19). It is **72** — strict enough that
   the check rejects its own committed `smp/TSMP100.mcs`, whose line 6 is 72
   columns and was received successfully. 71 is the *JCL* limit (72 is JCL's
   continuation column), which is why generated JCLIN cards are still held to it.
