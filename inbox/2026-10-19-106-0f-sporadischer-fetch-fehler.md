@@ -138,3 +138,13 @@ ohne echte Hardware nicht zu trennen.
 - Jeder Fetch kann ihn treffen, und jeder Treffer kostet die Modulgröße bis zum
   Ende des Adressraums. Ein Server, der ein Modul pro Request neu holt, sammelt
   das über die Laufzeit an.
+- **Ein Server, der seine Module hält, fetcht nur einmal pro Modul.** Ein
+  gelinktes Modul überlebt seinen LINK nicht (MVS löscht es bei Use Count 0,
+  der nächste LINK fetcht neu); eine per LOAD in der Jobstep-Task gehaltene
+  Kopie findet dagegen jeder LINK, auch aus einem Subtask und auch auf dem Weg
+  `BLDL` + `LOAD DE=` (Probe `RESP`, TK5 JOB 44 / MVS/CE JOB 19, httpd#250).
+  HTTPD macht das seit PR mvslovers/httpd#305 (`RESIDENT=YES`): mit gelöschtem
+  MVSMF-Member beantwortete der laufende Server 31 von 31 Requests, Key 8 und
+  Key 0, gegen 31 × `806-4` ohne Halten (httpd#198, 2026-10-19). Nur
+  RENT- oder REUS-Module halten: ein Modul ohne beides wurde aus der
+  gehaltenen Kopie erneut ausgeführt (Fall C der Probe).
