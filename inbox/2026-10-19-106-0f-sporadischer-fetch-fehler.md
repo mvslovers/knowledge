@@ -86,11 +86,21 @@ READ … PROGRAM CHECK` in IEBCOPY auf m38b (JOB01694 unter 4.9.1, JOB01989 unte
 
 ## 4. ERRET-Konvention auf MVS 3.8j, gemessen
 
-- `LOAD`/`LINK` mit ERRET: der Exit bekommt den Completion Code in R1
-  (rechtsbündig) und den Reason Code in R15.
-- Fehlendes Modul: `IEA703I 806-4`, `R1=00000806 R15=00000004`.
-- Fetch-I/O-Fehler: `IEA703I 106-F`, `R1=00000106 R15=0000000F`.
-- (Für libc370#553: `__link()` wirft beides heute weg.)
+- **`LOAD`** mit ERRET: der Exit bekommt den Completion Code in R1
+  (rechtsbündig) und den Reason Code in R15 (httpd#300, LDLP).
+  - Fehlendes Modul: `IEA703I 806-4`, `R1=00000806 R15=00000004`.
+  - Fetch-I/O-Fehler: `IEA703I 106-F`, `R1=00000106 R15=0000000F`.
+- **`LINK`** (SVC 6, Parameterliste mit Fehlerausgang, ohne DCB) ist anders:
+  R1 enthält den Completion Code, **R15 aber keinen Reason Code**. Fehlendes
+  Modul: `IEA703I 806- 4` auf der Konsole, im Exit `R1=00000806` und
+  `R15=000A5AF2` (TK5) bzw. `00095AF2` (MVS/CE), offenbar eine Adresse im
+  Bereich des Aufrufers. Gemessen am 2026-10-19 in Wegwerf-Containern (TK5
+  JOB 44, MVS/CE JOB 19, Probe `RESP`, httpd `internals/fetchprobe/resp.asm`,
+  httpd#250).
+- (Für libc370#553: `__link()` wirft beides heute weg; den Completion Code
+  kann es aus R1 holen, einen Reason Code liefert LINK dort nicht.)
+- Korrektur 2026-10-19: Die erste Fassung dieser Notiz schrieb die
+  R15-Konvention LOAD *und* LINK zu; gemessen war sie nur für LOAD.
 
 ## 5. Hercules 4.9.1 (TK5-Bundle): falsche Modulinhalte ohne jeden Fehler
 
