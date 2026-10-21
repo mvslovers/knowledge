@@ -114,13 +114,33 @@ HMA2293 ** CONTROL STATEMENT IGNORED DUE TO PREVIOUS ERROR       (next UCLIN blo
 UCLIN step RC 12
 ```
 
-The first (CDS) block is rejected as a whole at RC 08, the following block is skipped
-(RC 12), and the ACDS was left unchanged (TUFS150 still `STATUS = REC APP ACC`), while the
-final `LIST` step answered RC 04 and so looked like a normal result. A `RESETRC .` between
-the blocks stops the cascade, but the block that names a missing id is still rejected.
-Naming only ids that exist ends RC 00. Consequence for every product: a removal UCLIN
+The first (CDS) block is NOT rejected as a whole: every `DEL` that names an existing id
+is applied (`HMA2550`), only the statements naming a missing id fail (`HMA2532` +
+`HMA2560`), statements after a failing one are still processed, and the block ends at
+RC 08. The following block (`UCLIN ACDS`) is skipped (`HMA2293`, step RC 12), so the ACDS
+was left unchanged (TUFS150 still `STATUS = REC APP ACC`), while the final `LIST` step
+answered RC 04 and so looked like a normal result. A `RESETRC .` between the blocks
+lets the next block run (measured: it processed its own `DEL`s, with its own HMA2532 for
+a missing id); without it the next block is skipped again. One `UCLIN` block per step
+also avoids the cascade, and the steps then end RC 08 each. (The first version of this
+note said "rejected as a whole"; re-measured on MVS/CE and TK5 on 2026-10-21, which
+shows the CDS entries gone and only the ACDS block skipped.) Naming only ids that exist
+ends RC 00. Consequence for every product: a removal UCLIN
 must only name ids that exist (or follow a DELETE function that tombstoned them), and
 the stanzas of the final LIST must be read, not the return code.
+
+## 4. The target library of a deleting APPLY comes from the DD, and a missing DD fails silently
+
+Measured 2026-10-21 on MVS/CE and TK5 with the dummy function of section 2:
+
+- `APPLY` without a `HMASMP.LINKLIB` DD still ends RC 04 with the same four
+  `HMA2240 SUCCESSFULLY DELETED LMOD ... ON LINKLIB LIBRARY` lines, but the SMPAPP
+  procedure then points `LINKLIB` at `SYS1.LINKLIB`: `UFSD.LINKLIB` kept all four
+  members. Return code and messages are the same as for a run that worked.
+- `ACCEPT` without a `HMASMP.AUFSDLOD` DD ends RC 12 with `HMA2833 ** AUFSDLOD DDCARD
+  MISSING`, `HMA3020 ... REASON = DELETE PROCESSING FAILURE`, `HMA3703`; the members of
+  `UFSD.AUFSDLOD` stay. This one is loud.
+- So the only proof of a deleting APPLY is the member list of the target library.
 
 ## Limits
 
