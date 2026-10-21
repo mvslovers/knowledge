@@ -8,7 +8,7 @@ in one job). The containers were removed afterwards; nothing was run on a real s
 Job numbers are not carried over. Board approval to write this note: Paperclip comment
 on MVS-225 (2026-10-21).
 
-This note refines `2026-10-21-smp4-restore-reject-after-accept.md`: that note reads the
+This note refines `2026-10-21-smp-restore-reject-after-accept.md`: that note reads the
 REJECT failure as "ACCEPT removes the MCS from SMPPTS" (inferred). The measurement
 below names the setting responsible.
 
