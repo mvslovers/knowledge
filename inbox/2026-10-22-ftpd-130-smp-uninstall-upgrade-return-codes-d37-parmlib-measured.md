@@ -6,7 +6,10 @@ candidate's artefacts following `docs/installation.md` (Paperclip MVS-20, ftpd#2
 Measured in fresh, throwaway containers (`mvsce-target up --host mvsdev`): TK5 (image with
 FTPD 1.2.0 / TFTP120 SMP-installed) and MVS/CE (image with an FTPD 1.2.0 that SMP never saw).
 Container results, not stand results. The containers are gone. Job numbers restart in every
-container, so each number below belongs to its run only.
+container, so each number below belongs to its run only. The upgrade in section 1 and the
+MVS/CE install are from the run on candidate `6b6367d` (rc3 files, identical in content to rc2);
+the uninstall in section 2 and the D37-04 jobs in section 3 are from the run on the same commit
+built earlier (rc2), whose upgrade job produced the same result.
 
 Platform: mvs38j (TK5, MVS/CE).
 
@@ -48,7 +51,7 @@ Rule that follows: the return code of an upgrade is not a pass/fail signal. Veri
 
 ## 2. Removing FTPD completely: a dummy FUNCTION with `DELETE(...)` works on TFTP130
 
-State before: TK5 with TFTP130 installed by the step in section 1. Job sequence (JOB00049 to
+State before: TK5 with TFTP130 installed by the upgrade of section 1. Job sequence (JOB00049 to
 JOB00052), each step checked:
 
 1. `FTPDDEL` (JOB00049, CC 0004): a dummy function without elements, `TFTPDEL`, with
@@ -120,6 +123,6 @@ containers, against the container's address.)
 
 ## Status
 
-Measured. Uninstall, upgrade return codes and the D37-04 case are reproduced twice (candidate
-`ebd6d05` and `6b6367d`). Not measured: the same sequence on a real stand with years of SMP
+Measured on candidate `6b6367d` (rc2 and rc3 builds of the same commit; the upgrade return code
+was seen on both). Not measured: the same sequence on a real stand with years of SMP
 history (old FMIDs, tombstones).
