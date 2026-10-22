@@ -16,7 +16,7 @@ verified_on: 2026-08-14
 verified_platforms: ["MVS/CE (mvsdev)", "TK5 (drnmig3a)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, rexx370, nsf370, mbt]
 tags: [smp, smp4, sysmod, fmid, jclin, lklib, mcs, installation, distribution, xmit]
-related: [ECO-0001, ECO-0008, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003, MVS-SMP-0004, MVS-SMP-0005]
+related: [ECO-0001, ECO-0008, MVS-SMP-0001, MVS-SMP-0002, MVS-SMP-0003, MVS-SMP-0004, MVS-SMP-0005, MVS-SMP-0006, MVS-SMP-0007, MVS-SMP-0008, MVS-SMP-0009, MVS-SMP-0010, MVS-SMP-0011, MVS-SMP-0013, MVS-SMP-0014, MVS-SEC-0011]
 ---
 
 ## Context
@@ -189,6 +189,36 @@ inventory carries no information about SVC 244 availability.
   so its absence proves nothing about whether the id is free.
 - Authorization is orthogonal and remains the weak point: an install can
   complete cleanly and the product still not start. See `ECO-0001`.
+
+## Correction notes (added 2026-10-22, after later measurements)
+
+The measurements above stand as measured. Four statements in the text read as
+current guidance and no longer are. Status of this document is unchanged.
+
+- **"A new minor is a clean cut (RESTORE + REJECT the old)" and the UCLIN
+  workaround offered for it: superseded for upgrades.** A release that carries
+  `++VER(Z038) DELETE(<predecessor>)` replaces its predecessor in the same
+  install, with no UCLIN step: SMP deletes the old modules and the module entries
+  move to the new id (`MVS-SMP-0008`). ufsd 1.3.0 and later ship this way
+  (`[source: ufsd docs/installation.md §10, 6804ee7]`). `UCLIN` remains the way to
+  remove a product or to clean up a test install.
+- **"Only by `UCLIN`" is too strong as a general statement.** The same RC 12 pair
+  was measured again on a second product, and `PURGE=YES` in the PTS SYSTEM entry
+  is the probable reason `REJECT` finds nothing (`MVS-SMP-0013`, `inferred`). An
+  element-less function with `++VER(Z038) DELETE(<product>)` also removes the
+  modules and the `MOD`/`LMOD` entries of an accepted product, but `UCLIN` is
+  still needed to free the ids (`MVS-SMP-0014`).
+- **"Since the target datasets are versioned, every release brings a fresh
+  library anyway" is outdated.** ufsd data set names carry no version since
+  1.3.0 (mvslovers/ufsd#71, closed; mvslovers/ufsd#75, merged). Versioned names
+  never bought a clean cut in any case: SMP collides on the module name in the
+  inventory, not on the data set (`MVS-SMP-0006`, `MVS-SMP-0010`).
+- **The free-id test has a third state.** `LIST CDS SYSMOD(x)` with RC 04 still
+  means free, but an id that was deleted by a later function answers RC 00 with
+  only a `DELBY` line. It is spent, not installed (`MVS-SMP-0009`).
+
+Related, not corrected: a return code is no proof that an install happened
+(`MVS-SMP-0007`); aliases need `TALIAS` on the `++MOD` (`MVS-SMP-0011`).
 
 ## Open
 

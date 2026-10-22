@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-07-27
 applies_to: [libc370, ufsd, httpd, mvsmf, nsf370]
 tags: [apf, authorization, svc244, portability]
-related: [CF-2026-001, ECO-0007, ECO-0008]
+related: [CF-2026-001, ECO-0007, ECO-0008, MVS-SEC-0012]
 ---
 
 > **Disputed — see `CF-2026-001`** (does any `AC(1)` in our builds carry load?).
