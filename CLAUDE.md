@@ -67,6 +67,7 @@ knowledge/
 │   ├── supervisor/        SVC, dispatching, ATTACH, ESTAE/ESPIE, recovery
 │   ├── subsystem/         SSCT/SSCVT, IEFSSREQ, SSI function codes
 │   ├── jes2/              job lifecycle, JCT, internal reader, HASP internals
+│   ├── security/          RAKF/RACF, SAF, ACEE, operator flags, spool authorization
 │   ├── data-mgmt/         DASD geometry, VTOC/DSCB, BSAM/QSAM/BPAM, catalogs
 │   ├── jcl/               DD semantics, concatenation, DCB merge
 │   ├── tso-rexx/          IKJEFT01, IRXINIT/IRXTMPX, REXX host environments

@@ -12,7 +12,7 @@ verified_on: 2026-09-25
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [rexx370]
 tags: [smp, smp4, restore, reject, usermod, jclin, lmod, csect, inventory, hma2462, hma2033]
-related: [ECO-0007, MVS-SMP-0004]
+related: [ECO-0007, MVS-SMP-0004, MVS-SMP-0013]
 ---
 
 ## The claims
@@ -96,3 +96,12 @@ STATEMENT AT COL 25`, which is the `CHECK` (JOB01305).
 - A RECEIVE that fails with `HMA3980 SYNTAX OR CONSTRUCTION ERROR` names its
   cause in the line above. Here it was `HMA3482 … MORE THAN ONE ++VER`, after a
   text edit had duplicated the `++VER` block (JOB01308).
+
+## Addendum (2026-10-22): why REJECT finds nothing
+
+The `HMA2462` above reads "not found on SMPPTS": REJECT works from the MCS
+member, and here RESTORE had already removed it (claim 1). For an *accepted*
+FUNCTION the same message appears with no RESTORE involved, and the probable
+cause there is `PURGE=YES` in the PTS SYSTEM entry. `[inferred]` The two readings
+agree: `HMA2462` means "no MCS in the PTS", whatever removed it. See
+`MVS-SMP-0013`.

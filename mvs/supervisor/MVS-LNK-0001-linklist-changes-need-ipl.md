@@ -12,7 +12,7 @@ verified_on: 2026-09-27
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [rexx370, brexx370, ufsd, ftpd, httpd, mvsmf]
 tags: [linklist, lnklst, ieabld, resident-bldl, iea703i, abend106, program-fetch, compress, iebcopy, extent, ipl, cmdlib]
-related: [MVS-SMP-0004, MVS-BLDL-0001]
+related: [MVS-SMP-0004, MVS-BLDL-0001, MVS-LNK-0002]
 ---
 
 ## The claims
@@ -66,6 +66,12 @@ broke.
   starting.
 - **`106-F` is not "module missing".** It means the module is fetched from a place
   the link list does not know. Read the `IEA703I` line: it names the module.
+  *Qualification (added at ingest of MVS-LNK-0002): that reading holds for the
+  two causes measured here, which fail persistently until the IPL. `106-0F`
+  also occurs intermittently on a library nobody changed, through the link list
+  and through `STEPLIB` alike: the next fetch of the same module succeeds.
+  That is a third, unrelated cause (MVS-LNK-0002). A `106-F` that goes away on
+  repetition is not a stale link-list view.*
 - **A back-up that reads every member** (IEBCOPY unload to a sequential data set)
   is also the cheap check that a library is intact after an aborted compress.
 - **mvsMF reports the size of a data set in tracks** while labelling it

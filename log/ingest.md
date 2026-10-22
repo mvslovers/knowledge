@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-22 | weekly inbox ingest — 24 inbox files (Hercules X'75' measurements, libc370 runtime notes, SCRATCH/VSAM, RAKF/JESSPOOL, SMP 4 notes, the 106-0F fetch fault) re-checked against public issues/PRs, release tags, and the RAKF, libc370, hyperion, ftpd, mvsMF and mbt sources; throwaway-container job numbers are container-local | `MVS-TCP-0001`–`0008`, `ECO-0010`–`0014`, `ECO-0020`–`0022`, `MVS-SUP-0001`–`0002`, `MVS-JCL-0002`, `MVS-LNK-0002`–`0005`, `MVS-DASD-0002`, `MVS-VSAM-0001`–`0003`, `MVS-SEC-0001`–`0012`, `MVS-JES2-0001`–`0002`, `MVS-SMP-0006`–`0014` | `ECO-0007` (marked correction: the UCLIN-upgrade text is superseded by `DELETE`), `ECO-0008` (marked addition: statements qualified by RAKF build), `MVS-SMP-0005` (marked addendum), `MVS-LNK-0001` (106-0F is a third cause), `ECO-0001`, `ECO-0003`, `ECO-0006`, `MVS-DASD-0001`, `MVS-SMP-0001`/`0002`/`0004` (`related:` only); `CLAUDE.md` §3 layout gains `mvs/security/` | none |
 | 2026-10-18 | inbox `2026-09-25-ihbinnra-bpam-reader.md` — rexx370's BPAM exec reader (rexx370#230, PR #232), JOB01197 on MVS/CE LAB; every claim re-derived from the artefacts: `FIND.asm`, `IHBINNRA.asm`, `ieziob.asm`, libc370 `@@aread.asm`, rexx370 `asm/irxbpam.asm` | `MVS-FIND-0001`, `MVS-BSAM-0001`, `MVS-BSAM-0002`, `MVS-OPEN-0001` | `MVS-BLDL-0001` (pointer to `MVS-FIND-0001`), `MVS-JCL-0001` (`related:` → `MVS-BSAM-0001`) | none |
 | 2026-10-18 | oftpd session — TSTPROT and TSTSVC in a throwaway MVS/CE container (oftpd#15 closed, #16 measured; oftpd `internals/xmem.md` section 12) | none | `MVS-PROT-0001` (**measured**: key-8 access to subpool 241 answers CC 1, fetch yes / store no, against a key-8 heap control at CC 0; the granularity stays open and a passive scan cannot close it; `verified_on` 2026-10-18, MVS/CE; status stays `inferred` because the MVCK claim itself is still unmeasured) | none |
 | 2026-10-18 | oftpd session — Hercules (hyperion) `control.c`, the `E501 test_protection` handler, read while writing the oftpd#15 probe | none | `MVS-PROT-0001` (**TPROT is privileged** — `PRIV_CHECK`; the key comes from `effective_addr2 & 0xF0`, not from the PSW; the CC order now has a source; the consequence that an unauthorized caller can never check its own access) | none |
@@ -21,6 +22,83 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-22 — weekly inbox ingest
+
+24 inbox files were ingested, two of them only in part (their remainders stay in the inbox); the
+25th, `2026-10-17-eco0004-ieavsy50-pending-measurement.md`, was not touched. Every claim was checked against the issue, PR, release or
+source it cites, not against the inbox text. The IBM listings (`IEAVSY50`, `IGG0290A`, `IGG0CLAL`,
+`IGG0CLB6`, `IHASDWA`) were not reachable, so mechanisms that rest on them are tagged `inferred`
+("from the inbox note; the listing was not re-read at ingest") and the measurements stay `tested`.
+Job outputs of the throwaway containers are gone; the quoted output in the item plus the public
+issue/PR carry them.
+
+**Corrections to the inbox text** (the documents state the fact; the item was outdated or wrong):
+
+- "Unreleased on 2026-10-20" for libc370 PR #679 and #683: both shipped in libc370 v2.24.0
+  (2026-10-20); the `try()` fix is in 2.23.0 and the lazy file-table fix in 2.24.1.
+- hyperion#161 is still open (reopened after probe PR #656), not closed; upstream PRs #885 and
+  #895 are merged. "25 of 30 rounds" in the `gethostbyname` run includes 5 control rounds.
+- The SYSENV lazy start is libc370 2.16.0, not 2.15.0 (v2.24.1 release notes).
+- "CE has RAKF 2.0.0": the image prints `RAKF V2R0M0` but is an older build than the release;
+  `ECO-0008`'s "1.2.6 deployed, including MVS/CE" is wrong for MVS/CE. FTPD "1.3.0" does not exist;
+  the measurements are cited to main at `d9c88fa`. mvsMF also has a token cookie login (v1.3.0).
+- "An id this system never saw reports nothing to do" (smp.md and the SMP item) is wrong: it
+  reports HMA2532 + HMA2560 and ends RC 08 (`MVS-SMP-0009`). smp.md should be corrected.
+- The 7 vs 8 `106-F` lines, a JOB37 reference that is in no public comment, and the cited
+  httpd#303 (the MIME issue; the socket measurement is PR #306).
+
+**Left out, with the claim and the reason:**
+
+- Hercules X'75': the IEFACTRT field order (the item itself says unchecked); the cause of the heap
+  abort and of the external 636-byte report (never investigated); `gethostbyaddr` as a measured stall
+  (the control returned NULL, so `[source]` only).
+- libc370: what a LINKed module that ends with its own `estae()` leaves behind (unmeasured); SVC 99
+  `&&Name` error 1708 and `fclose(stdin)`/`freopen()` ending S A0A (no source, no output) — both stay
+  in the inbox; whether the time zone shows the same lazy-init pattern (never tested).
+- RAKF: the cold-start mechanism is `[inferred]` (the two garbage-table cases cannot isolate
+  "profiles only missing"); mvsMF hold/release never run; FTPD main's immediate `530` is source only.
+- SMP: the APF dsname+volser paragraph (volser pairing not publicly evidenced, orphan hazard an
+  unmeasured inference) stays in the inbox; the "every project declares `prereq = []`" claim and the
+  FMID registry parts are not KB material and not verifiable from the `project.toml` files.
+- `ECO-0004` item: untouched; it asks for an MVS measurement first and rests on `IEAVSY50`.
+
+**Open points noticed, not changed:** `ECO-0003`'s caveat that `__start` re-opens the standard
+streams may be stale since the lazy streams of 2.15.0; `ECO-0008`'s "requested group wins" (TK5)
+was not reproduced on RAKF 2.0.0 and the source does not explain it; `ECO-0007`'s and the
+SMP documents' `verified_platforms` / sources lines still name private stands (older text, not
+touched).
+
+**Documents:**
+
+- `MVS-TCP-0001` (`source`): the Hercules X'75' interface — two instructions per call, slot tables, 256-byte segments.
+- `MVS-TCP-0002`: `select()` can miss a readable socket because the emulator takes `nfds` from the highest socket's host descriptor.
+- `MVS-TCP-0003`: `gethostbyname()` stops the emulated CPU for as long as the host resolver takes (5 s measured).
+- `MVS-TCP-0004`: GETERRORS returns the previous holder's error and GETERROR is shared by all address spaces; libc370 guard since 2.24.1.
+- `MVS-TCP-0005`: above 256 bytes a restarted SEND or RECV corrupts data without hyperion#885; libc370 caps both at 256.
+- `MVS-TCP-0006`: a partial RECV consumes what it returned (negative result, loopback only).
+- `MVS-TCP-0007`: about 467 leaked X'75' conversations abort the Hercules process before the slot table fills.
+- `MVS-TCP-0008`: the SELECT `aux2` is unchecked; a hand-built 2048 ends Hercules with SIGSEGV.
+- `ECO-0010`: libc370 2.20.0 closes a program's sockets at program end, so a cancelled server frees its port (measured against 2.12.1).
+- `ECO-0011`: `rename()` before 2.18.1 cut the new name at column 72; fixed in 2.18.1.
+- `ECO-0012`: `try()` before 2.23.0 left the SDWA allocated, about 520 bytes per recovered abend.
+- `MVS-SUP-0001`: an ESTAE retry exit must set SDWAFREE, or the SDWA stays allocated (mechanism `inferred`).
+- `ECO-0013`: libc370 2.15.0–2.24.0 abended S0C4 in key 8 after the first `fopen()` ran in a key-0 window; fixed in 2.24.1.
+- `MVS-SUP-0002`: storage obtained under PSW key 0 is key-0 storage, so key 8 gets S0C4 on a store.
+- `ECO-0014`: testing a stdio read-error guard with a temporary data set and a second DD with a different DCB.
+- `MVS-JCL-0002`: a JCL DD stays allocated after libc370's SVC 99 unallocation; the return code was not measured.
+- `MVS-DASD-0002`: SCRATCH ignores the expiration date for years after 1999.
+- `MVS-VSAM-0001`: SHOWCB FDBK returns only the reason code.
+- `MVS-VSAM-0002`: under RAKF a normal job's DEFINE makes catalogs RACF-indicated (ADSP) and VSAM then skips cluster passwords.
+- `MVS-VSAM-0003`: the SHOWCB MF=G parameter list is 8n+20 bytes.
+- `MVS-LNK-0002`–`0005`: the sporadic 106-0F fetch fault (plus the 4.9.1 wrong module image), the permanent storage leak after a failed fetch, the ERRET register convention for LOAD vs LINK, and a LOAD-held copy surviving.
+- `MVS-SEC-0001`/`0002`: UADS OPER and RAKF column 28 are independent operator flags; the UADS member layout and attribute byte.
+- `MVS-SEC-0003`: TSO STATUS, OUTPUT and CANCEL check the job-name prefix.
+- `MVS-SEC-0004`–`0008`: JESSPOOL return codes and precedence; the 8-character entity cap; last matching profile in EBCDIC order wins; the operations bypass applies only to DATASET, DASDVOL and TAPEVOL; group/access pair profiles and the mandatory universal line.
+- `MVS-SEC-0009`–`0012`: the profile loader sorts its input and abends only on bad records; RAKF 2.0.0 against the older RAKF in the MVS/CE image; a 2.0.0 install needs a CLPA IPL and valid tables; the started-task user and group come from the USERS table.
+- `MVS-JES2-0001`/`0002`: no JES2 node name on 3.8j; the JESJOB owner is empty for reader jobs without USER and SYSTEM for started tasks.
+- `ECO-0020`–`0022`: the libc370 `racf_auth`/`racf_login` contract; FTPD JES mode and mvsMF restjobs, where the owner is a display filter and login is gated by FACILITY FTPAUTH.
+- `MVS-SMP-0006`–`0014`: element ownership (`NOT SEL`); a return code is no proof of an install and `^` is mangled on the mvsMF job-submit path; `++VER DELETE`; DELBY tombstones and `UCLIN DEL SYSMOD`; DELETE resolves the ddname in its own job (HMA2832); aliases need `TALIAS`; `REQ` is conjunctive; RESTORE and REJECT after ACCEPT; removing a product with a dummy DELETE function.
 
 ## 2026-10-18 — the BPAM reader's three observations, and the one that was already in
 

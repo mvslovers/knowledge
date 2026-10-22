@@ -13,7 +13,7 @@ sources:
 verified_on: 2026-08-01
 applies_to: [libc370, cc370, rexx370, httpd, httprexx, httplua, ufsd, nsf370]
 tags: [libc370, runtime, startup, crt0, crt1, crtm, clibcrt, clibgrt, clibppa, linkage, save-area, language-environment, model-priors, myth]
-related: [ECO-0002, ECO-0006, PM-2026-001]
+related: [ECO-0002, ECO-0006, ECO-0010, ECO-0013, PM-2026-001]
 ---
 
 ## Why this document exists
