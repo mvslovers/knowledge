@@ -3,7 +3,7 @@
 Source: QA acceptance run of FTPD 1.3.0 (FMID TFTP130, deletes TFTP120), release candidate
 `6b6367d` (build id `6B6367D`, LIBC370 2.25.1 `FCDE4E8`), installed through SMP from the
 candidate's artefacts following `docs/installation.md` (Paperclip MVS-20, ftpd#283 to #287).
-Measured in fresh, throwaway containers (`mvsce-target up --host mvsdev`): TK5 (image with
+Measured in fresh, throwaway containers (`mvsce-target up`): TK5 (image with
 FTPD 1.2.0 / TFTP120 SMP-installed) and MVS/CE (image with an FTPD 1.2.0 that SMP never saw).
 Container results, not stand results. The containers are gone. Job numbers restart in every
 container, so each number below belongs to its run only. The upgrade in section 1 and the
