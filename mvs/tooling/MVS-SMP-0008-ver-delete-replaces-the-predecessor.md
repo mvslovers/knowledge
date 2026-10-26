@@ -12,7 +12,7 @@ verified_on: 2026-09-14
 verified_platforms: ["MVS/CE (3.0.0)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, mbt]
 tags: [smp, smp4, delete, ver, hma2240, hma2461, hma2380, accept, cond, upgrade, element-ownership, mbt]
-related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0007, MVS-SMP-0009, MVS-SMP-0010, MVS-SMP-0011, MVS-SMP-0014]
+related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0007, MVS-SMP-0009, MVS-SMP-0010, MVS-SMP-0011, MVS-SMP-0014, MVS-SMP-0015]
 ---
 
 ## The claim

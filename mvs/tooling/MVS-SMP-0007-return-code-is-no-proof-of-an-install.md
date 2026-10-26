@@ -5,13 +5,14 @@ status: tested
 platform: [mvs38j]
 sources:
   - "Three independent cases met on 2026-09-14: NOT SEL install (MVS/CE system, JOB00291, mbt#98); upgrade whose STEPLIB was not re-pointed (MVS/CE system, ftpd#146 arm D, JOB00325); multi-line IDCAMS scratch submitted through the mvsMF REST API (TK5 system, as reported in the inbox note — no job number carried)"
+  - "Addition 2026-10-26: fourth case, TK5 throwaway container, 2026-10-22 — FTPD 1.3.0 upgrade (TFTP130) whose XMIT upload failed; the install job pointed at the image's stale XMIT data sets (job numbers not carried over)"
   - "mvsmf src/jobsapi.c function submit_jcl_content, origin/main 5487621 — http_xlate(content, content_length, httpx->xlate_cp037->atoe)"
   - "httpd src/httpxlat.c, origin/main 52732cf — cp037_atoe[0x5E] = 0xB0; the IBM-1047 table maps 0x5E to 0x5F"
 verified_on: 2026-09-14
 verified_platforms: ["MVS/CE (3.0.0)", "TK5 Update 5"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, mbt]
 tags: [smp, smp4, return-code, verification, idcams, mvsmf, encoding, cp037, idc4229i, not-sel]
-related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0008, MVS-SMP-0010]
+related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0008, MVS-SMP-0010, MVS-SMP-0015]
 ---
 
 ## The claim
@@ -20,7 +21,7 @@ related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0008, MVS-SMP-0010]
 happened.** The inventory — a member list, a `LIST` stanza, a startup banner —
 answered correctly each time; the return code did not. `[tested]`
 
-## Three cases, same day, three projects
+## Three cases, same day, three projects (a fourth added below)
 
 1. **`NOT SEL` install.** RECEIVE, APPLY CHECK, APPLY and ACCEPT all RC 00,
    `HMA2270 … SUCCESSFULLY COMPLETED`, `STATUS = REC APP ACC` in both zones, and
@@ -32,6 +33,15 @@ answered correctly each time; the return code did not. `[tested]`
    the old module (`MVS-SMP-0010`, same-last-qualifier case).
 3. **Multi-line IDCAMS scratch that deleted one of six data sets** and reported
    a single non-zero code. The cause is the transport, below.
+
+4. **Stale input after a failed upload (added 2026-10-26).** The TK5 image carries
+   `HERC01.FTPD.LOAD.XMIT` and `HERC01.FTPD.SAMP.XMIT` of FTPD 1.2.0. When the upload of the
+   new XMIT files fails, or goes to other data set names, and the install job still names those
+   data sets, RECEIVE succeeds and SMP reports TFTP130, but the installed module is the old one.
+   The SMP output showed `Receiving 'FTPD.V1R2M0.LINKLIB'` and the started task printed
+   `FTPD 1.2.0`; the return codes were clean. `[tested]` Delete the old data sets before the
+   upload, and read the banner afterwards. The upgrade return codes themselves differ by image
+   (`MVS-SMP-0015`).
 
 Where to read the truth instead: the member list of the target library after an
 install (`MVS-SMP-0006`, `MVS-SMP-0008`), the `LIST CDS` / `LIST ACDS` stanza

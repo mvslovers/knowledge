@@ -11,12 +11,15 @@ sources:
 verified_on: 2026-10-21
 applies_to: [ftpd]
 tags: [ftpd, jes, spool, authorization, jesowner, jescanj, ftpauth, facility, rakf, ftpd-90]
-related: [MVS-SEC-0003, MVS-SEC-0005, MVS-JES2-0001, MVS-JES2-0002, ECO-0020, ECO-0022]
+related: [MVS-SEC-0003, MVS-SEC-0005, MVS-JES2-0001, MVS-JES2-0002, ECO-0015, ECO-0020, ECO-0022]
 ---
 
 ## Which FTPD this is
 
-The latest FTPD release is **v1.2.0** (2026-10-13). No 1.3.0 release exists. The JES behaviour below was
+The latest FTPD release is **v1.2.0** (2026-10-13). No 1.3.0 release exists. **Correction
+2026-10-26:** FTPD v1.3.0 was published on 2026-10-22 (tag commit 6b6367d); it contains commit
+`e039c02` and so the unauthorized-server answer below. `[source: git tag v1.3.0 and release page]`
+The JES behaviour below was
 measured with the main branch of 2026-10-21 and is true of main `d9c88fa` (2026-10-22) as read in source;
 the v1.2.0 tag has the same spool code. `[source: v1.2.0 and d9c88fa, src/ftpd#jes.c]` The one visible
 difference between the tag and main is the unauthorized-server answer (below).
@@ -48,6 +51,7 @@ difference between the tag and main is the unauthorized-server answer (below).
   (ECO-0020), which is what main's comment in `aut.c` names as the reason for its change.
   Main, since commit `e039c02` (2026-10-21), answers `530 Login not possible: FTPD is not APF
   authorized...` at once and keeps the session usable (`USER`, `SYST`, `NOOP`, `QUIT`).
+  The mechanism of the silent `PASS` (a second S047 inside the command recovery) is ECO-0015.
   `[source: src/ftpd#aut.c at d9c88fa]` `[tested]` for the release's hang; the main answer is source only (not run).
 - **`SITE JESINTERFACELEVEL` is not accepted:** FTPD answers it as an unrecognized parameter, as z/OS does
   for a client that tries to change a server setting. What the level governs on z/OS (who may see and fetch

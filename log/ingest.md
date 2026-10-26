@@ -5,6 +5,7 @@ rather than merely believable.
 
 | date | source | created | changed | conflicts |
 |---|---|---|---|---|
+| 2026-10-26 | weekly inbox ingest (MVS-641) — 2 of the 5 inbox files, re-checked against ftpd v1.2.0 / 5f5734b / e039c02 / v1.3.0 (`docs/installation.md`, `docs/uninstall.md`, ftpd#258, #259, #285–#287), libc370 v2.25.1 and the existing SMP documents; job numbers are container-local | `ECO-0015`, `MVS-SMP-0015`, `MVS-DASD-0003` | `ECO-0020` (source paths corrected; marked addition on `racf_set_acee`; hang wording; pointer to `ECO-0015`), `ECO-0021` (marked correction: v1.3.0 exists), `MVS-SMP-0014` (marked addition: second product, TK5), `MVS-SMP-0007` (marked addition: fourth case, stale XMIT), `ECO-0007`, `ECO-0012`, `MVS-SMP-0008`, `PM-2026-003`, `MVS-DASD-0001` (`related:` only) | none (two corrections to the inbox text, see the section) |
 | 2026-10-22 | weekly inbox ingest — 23 of 24 inbox files (21 fully, 2 in part; Hercules X'75' measurements, libc370 runtime notes, SCRATCH/VSAM, RAKF/JESSPOOL, SMP 4 notes, the 106-0F fetch fault) re-checked against public issues/PRs, release tags, and the RAKF, libc370, hyperion, ftpd, mvsMF and mbt sources; throwaway-container job numbers are container-local | `MVS-TCP-0001`–`0008`, `ECO-0010`–`0014`, `ECO-0020`–`0022`, `MVS-SUP-0001`–`0002`, `MVS-JCL-0002`, `MVS-LNK-0002`–`0005`, `MVS-DASD-0002`, `MVS-VSAM-0001`–`0003`, `MVS-SEC-0001`–`0012`, `MVS-JES2-0001`–`0002`, `MVS-SMP-0006`–`0014` | `ECO-0007` (marked correction: the UCLIN-upgrade text is superseded by `DELETE`), `ECO-0008` (marked addition: statements qualified by RAKF build), `MVS-SMP-0005` (marked addendum), `MVS-LNK-0001` (106-0F is a third cause), `ECO-0001`, `ECO-0003`, `ECO-0006`, `MVS-DASD-0001`, `MVS-SMP-0001`/`0002`/`0004` (`related:` only); `CLAUDE.md` §3 layout gains `mvs/security/` | none |
 | 2026-10-18 | inbox `2026-09-25-ihbinnra-bpam-reader.md` — rexx370's BPAM exec reader (rexx370#230, PR #232), JOB01197 on MVS/CE LAB; every claim re-derived from the artefacts: `FIND.asm`, `IHBINNRA.asm`, `ieziob.asm`, libc370 `@@aread.asm`, rexx370 `asm/irxbpam.asm` | `MVS-FIND-0001`, `MVS-BSAM-0001`, `MVS-BSAM-0002`, `MVS-OPEN-0001` | `MVS-BLDL-0001` (pointer to `MVS-FIND-0001`), `MVS-JCL-0001` (`related:` → `MVS-BSAM-0001`) | none |
 | 2026-10-18 | oftpd session — TSTPROT and TSTSVC in a throwaway MVS/CE container (oftpd#15 closed, #16 measured; oftpd `internals/xmem.md` section 12) | none | `MVS-PROT-0001` (**measured**: key-8 access to subpool 241 answers CC 1, fetch yes / store no, against a key-8 heap control at CC 0; the granularity stays open and a passive scan cannot close it; `verified_on` 2026-10-18, MVS/CE; status stays `inferred` because the MVCK claim itself is still unmeasured) | none |
@@ -22,6 +23,39 @@ rather than merely believable.
 | 2026-09-23 | *(backfilled 2026-09-25 from front matter)* rexx370 session — IKJEFTRX BLDL on MVSCE-LAB (JOB01125/01127/01129/01131); IKJEBECI, IKJEBESA sources | `MVS-BLDL-0001` | `PM-2026-001` (`related:` → `MVS-BLDL-0001`) | none |
 | 2026-09-23 | MVSHIST session — SMP 4 experiments on MVSCE-LAB (jobs JOB01077–JOB01095) and TK3/TK5 zone measurements | `MVS-SMP-0001`, `MVS-SMP-0002`, `MVS-SMP-0003` | `ECO-0007` (open question on requisite zones answered; RC-04 note qualified; `related:` extended) | none |
 | 2026-08-04 | *(backfilled 2026-09-25 from front matter and file dates)* httpd, libc370, ufsd, nsf370, cc370, rexx370 repositories | `ECO-0006`, `MVS-ENC-0001`, `MVS-SSI-0001`, `PM-2026-001`, `PM-2026-002`, `UFSD-ADR-0001`; `tools/kb-index.py` | `ECO-0002`, `ECO-0003`, `ECO-0004` (`related:` links) | none |
+
+## 2026-10-26 — weekly inbox ingest
+
+2 of the 5 inbox files were ingested and deleted; 3 stay (see below). Every claim was checked against the
+issue, PR, tag or source it cites. The previous ingest (PR #2) and the PR that removed a private host name
+(PR #3) were merged before this run; this run is on the main after them.
+
+**Corrections to the inbox text** (the documents state the fact):
+
+- "No 1.3.0 release exists" (in `ECO-0021` as well as in the 2026-10-21 item): FTPD v1.3.0 was published
+  2026-10-22 and contains `e039c02`. `ECO-0021` carries a marked correction.
+- `ECO-0020` cited `src/racauth.c` and `src/raclogin.c`; in libc370 v2.25.1 the files are
+  `src/mvs/racf/racauth.c`, `raclogin.c` and `racsacee.c`.
+- "D37-04 means the directory is full" (FTPD 1.3.0 item): the compress that cured it gives back data space, not
+  directory blocks, and the sub-code was not looked up. `MVS-DASD-0003` records the meaning as **not established**.
+- The upgrade job clock time in the FTPD 1.3.0 item (20:04) is earlier than the commit time of `6b6367d`
+  (20:44); the candidate was probably rebuilt from a rewritten commit. The time is not carried into the documents.
+
+**Left out of the ingested items:** the container-networking aside about unpublished PASV data ports and the
+container port numbers (ports do not belong in a public document and the claim has no public evidence).
+
+**Left in the inbox, with the reason:**
+
+- `2026-10-17-eco0004-ieavsy50-pending-measurement.md` — asks for a measurement first.
+- `2026-10-19-smp4-messungen-…` (SMP 4 measurements) — the APF dsname+volser paragraph is not publicly evidenced.
+- `2026-10-20-libc370-215-lazy-grtfile-in-key0-window-s0c4.md` — the remainder (SVC 99 error 1708, `fclose(stdin)`/`freopen()` ending S A0A)
+  has no source or output.
+
+**Documents:**
+
+- `ECO-0015`: FTPD before ftpd#258 gives no reply to `PASS` when it is not APF-authorized — two S047 in a row, the second inside the recovery; fixed in v1.3.0.
+- `MVS-SMP-0015`: an upgrade APPLY ends RC 04 where SMP installed the deleted level and RC 00 where it did not (TK5 vs MVS/CE); allocation order on MVS/CE.
+- `MVS-DASD-0003`: D37-04 when copying the first new member into TK5 `SYS1.PARMLIB`; compress or a PARMLIB of your own; the meaning is not established.
 
 ## 2026-10-22 — weekly inbox ingest
 
