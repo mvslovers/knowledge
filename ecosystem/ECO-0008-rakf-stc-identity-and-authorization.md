@@ -16,7 +16,7 @@ verified_on: 2026-08-14
 verified_platforms: ["TK5"]
 applies_to: [ftpd, httpd, mvsmf, libc370]
 tags: [rakf, racf, security, authorization, acee, racinit, stc, identity, aceeuser, ihaacee, length-prefix]
-related: [ECO-0001, ECO-0007]
+related: [ECO-0001, ECO-0007, MVS-VSAM-0002, MVS-SEC-0001, MVS-SEC-0009, MVS-SEC-0010, MVS-SEC-0012, ECO-0020]
 ---
 
 ## Context
@@ -173,6 +173,37 @@ Three properties that bite:
 A guide written against the wrong one fails in both directions: a blank
 password is rejected on 1.2.x, and a filled one points at nothing on 2.0.0.
 State the baseline explicitly in anything we publish.
+
+## Addition (2026-10-22): which statements above hold for which RAKF build
+
+*Added at a later ingest. The text above is unchanged and still describes the 1.2.x / pre-2.0 behaviour it
+was measured on (TK5, 2026-08-14). The statements below qualify it by build. Terms: "image RAKF" and "RAKF
+2.0.0" as defined in MVS-SEC-0010.*
+
+- **The baseline is not the same in every image.** The MVS/CE image carries a RAKF that prints `RAKF V2R0M0`
+  (FMID TRKF200) but is an older build than the 2.0.0 release; TK5 carries 1.2.x. Behaviour, not the
+  banner, tells them apart (MVS-SEC-0010). `[tested]`
+- **Every started task has the same identity** holds for the pre-2.0 source and for the 1.2.x/image
+  behaviour. On **RAKF 2.0.0** the identity of an STC that is listed in `USERS` comes from that line (user
+  and group); only an STC not listed there gets `STC`/`STCGROUP`. An upgrade whose `USERS` puts the server
+  users in another group loses `FACILITY SVC244` (MVS-SEC-0012). `[tested]`
+- **"The requested group wins" (TK5, 2026-08-14) was not reproduced on RAKF 2.0.0:** there the requested
+  group is ignored and the ACEE group is that of the `USERS` line (MVS-SEC-0008, MVS-SEC-0012). The
+  source of both the pre-2.0 and the 2.0.0 `ICHSFR00` copies `CBLKGRP` into `ACEEGRP`, so the source does
+  not explain the TK5 observation; it stays as measured and is an open point. `[tested]` `[source]`
+- **RC 4 means allow** holds on all builds. On RAKF 2.0.0 a class that is not in its class table is the
+  exception: RC 8 and `RAKF0012 UNDEFINED CLASS` (MVS-SEC-0010, ECO-0020).
+- **"Both tables must be in ascending sort order"** does not hold for the profile loader measured on the image
+  RAKF and on RAKF 2.0.0: it sorts its input before processing, and an unsorted `PROFILES` loads normally
+  (the users loader carries the same change in source, not measured). What
+  aborts a reload (and keeps the old table) is a duplicate (U0300), a permit without a universal-access
+  record (U0400) and an entity record without access authority (U0500) (MVS-SEC-0009). `[tested]`
+- **"The `RAKFUSER`/`RAKFPROF` procedures are not the path on an installed system"** does not hold on the MVS/CE
+  and TK5 images measured: `S RAKFPROF` and `S RAKFUSER` reload the profile and user tables there
+  (MVS-SEC-0009, MVS-SEC-0012). `[tested]`
+- **Operations authority:** the column-28 flag and the UADS OPER attribute are independent operator flags,
+  and the operations bypass is limited to the DATASET, DASDVOL and TAPEVOL classes (MVS-SEC-0001,
+  MVS-SEC-0007). `[tested]`
 
 ## The userid in the ACEE is length-prefixed, and that is IBM's layout
 

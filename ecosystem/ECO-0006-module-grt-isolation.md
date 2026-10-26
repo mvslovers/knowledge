@@ -15,7 +15,7 @@ sources:
 verified_on: 2026-08-01
 applies_to: [httpd, httprexx, httplua, mvsmf, libc370]
 tags: [grt, wsa, writable-static, module, link-svc, crt1, crtm, grtapp1, grtapp2, vector-table, httpx, model-priors]
-related: [ECO-0003]
+related: [ECO-0003, ECO-0010, ECO-0013]
 ---
 
 ## The rule
