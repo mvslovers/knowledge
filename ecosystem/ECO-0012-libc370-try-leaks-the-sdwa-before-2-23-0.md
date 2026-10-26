@@ -11,7 +11,7 @@ sources:
 verified_on: 2026-10-19
 applies_to: [libc370, oftpd, httpd, ftpd, ufsd]
 tags: [libc370, try, estae, sdwa, sdwafree, setrp, retry, leak, region, abend, storage]
-related: [MVS-SUP-0001]
+related: [ECO-0015, MVS-SUP-0001]
 ---
 
 ## The claims
