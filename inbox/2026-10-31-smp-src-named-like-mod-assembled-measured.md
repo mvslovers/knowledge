@@ -1,4 +1,4 @@
-# SMP4: a ++SRC named like a MOD in the CDS is assembled and link-edited into the system library; a ++MAC named like an existing MAC is silently skipped
+# SMP4: a ++SRC named like a MOD in the CDS is assembled (and, if the text is valid assembler, link-edited into the system library, MVS/CE); a ++MAC named like an existing MAC is silently skipped
 
 Source: reproduction of a collision found while testing an SMP package with `++MAC`/`++SRC` library elements (mbt#310, mbt PR #311), 2026-10-31. Re-measured on fresh containers for citable job numbers.
 Platform: SMP4 `HMASMP LVL 04.48` on MVS 3.8j, two own throwaway containers. Container results, not stand results.
@@ -6,17 +6,16 @@ Platform: SMP4 `HMASMP LVL 04.48` on MVS 3.8j, two own throwaway containers. Con
 - MVS/CE 3.0.0, image `ghcr.io/mvslovers/mvsce@sha256:7ce810ce0fba609af00c14293d0532348a0bca3945d1a5b24adbdab2da7779e8`
 - TK5 Update 5, image `ghcr.io/mvslovers/tk5@sha256:2e4210c4c2d21c9dfd31199139d7142cc3d2c6bf593d5258dd612325c29c14c6`
 
-Maintainer approved this inbox entry.
-
 ## Pre-state (identical on both)
 
-`LIST CDS` before the test (one element type per `LIST CDS` statement):
+`LIST CDS` before the test (this note uses one `LIST CDS` statement per element type):
 
-- `MOD LISTALC` exists: JCLIN, DISTLIB ACMDLIB, LMOD LISTALC, library `SYS1.CMDLIB`.
-- No `SRC` and no `MOD` named `BUILD`, `LISTCAT`, `PRINT`.
-- `MAC` entries `BUILD`, `LISTALC`, `LISTCAT`, `PRINT` exist. They are the TSO HELP members (FMIDs EDM1102 / EST1102, AMACLIB / AHELP).
+- `LISTALC` is a `MOD` (JCLIN, DISTLIB ACMDLIB, LMOD LISTALC, library `SYS1.CMDLIB`) and a `MAC` (in `AHELP`).
+- `BUILD` is a `MAC` in `AMACLIB` (FMID EDM1102).
+- `LISTCAT` and `PRINT` are `MAC` entries in `AHELP`.
+- There is no `SRC` and no `MOD` named `BUILD`, `LISTCAT` or `PRINT`.
 
-So a TSO command name is at the same time a `MOD` (the command) and a `MAC` (its HELP member).
+Only `LISTALC` was used in the collision cases below.
 
 ## Test
 
@@ -54,7 +53,7 @@ Case B was measured on MVS/CE only. The job numbers belong to the containers nam
 
 ### Case B in detail
 
-- After APPLY, `LIST CDS MOD(LISTALC)` shows FMID and RMID = `TKB0B01` (`RMIDASM`). The system module in `SYS1.CMDLIB` was replaced by the package's source, assembled and relinked.
+- After APPLY, `LIST CDS MOD(LISTALC)` shows FMID and RMID = `TKB0B01` (`RMIDASM`). SMP reports a successful link-edit into `CMDLIB` (`HMA2390`) and sets the RMID of the module to the package's SYSMOD. The member in `SYS1.CMDLIB` itself was not listed before and after.
 
 ### Case C (control)
 
@@ -63,7 +62,7 @@ Case B was measured on MVS/CE only. The job numbers belong to the containers nam
 ### Case D in detail
 
 - `++MAC(LISTALC)`: SMP finds an existing `MAC` of that name and does not select the element. The status is `NOT SEL`, APPLY RC 0.
-- Nothing is copied: the target library has 0 members, also the DLIB (checked on TK5 via the mvsMF member list).
+- Nothing is copied: the target library has 0 members, also the DLIB (checked on TK5 only, via the mvsMF member list).
 
 ### Original occurrence
 
@@ -71,10 +70,10 @@ First found with the real package of mbt#310 (114 `++MAC` and 121 `++SRC` member
 
 ## What follows for packagers
 
-- A `++SRC` is not just a file copy. If its name equals a `MOD` in the target CDS, SMP assembles it and, if the assembly succeeds, link-edits it into the library of the matching `LMOD`. With non-assembler text (REXX, C, data) the assembly fails: APPLY RC 12, SYSMOD in ERROR, and an `SRC` entry is left behind in the CDS.
-- A `++MAC` whose name equals an existing `MAC` is skipped with status `NOT SEL` and APPLY RC 0. Nothing in the return code shows it; only the element status in the output (and the empty target library) does. This is the "a return code says the job ran, not that the work happened" case.
-- Names of TSO commands and their HELP members are typical collisions: `LISTALC`, `LISTCAT`, `BUILD`, `PRINT` are the ones measured above. The same name can be a `MOD` and a `MAC` at once.
-- Before the first install of a package with library elements, check every member name against the target CDS, one element type per statement:
+- A `++SRC` is not just a file copy. If its name equals a `MOD` in the target CDS, SMP assembles it and, if the assembly succeeds (measured on MVS/CE with valid assembler text), reports a link-edit into the library of the matching `LMOD` and sets the module's RMID to the package's SYSMOD. With non-assembler text (REXX, C, data) the assembly fails: APPLY RC 12, SYSMOD in ERROR, and an `SRC` entry is left behind in the CDS.
+- A `++MAC` whose name equals an existing `MAC` is skipped with status `NOT SEL` and APPLY RC 0. Nothing in the return code shows it; only the element status in the output (and the empty target library) does.
+- Collision measured: `LISTALC`, which is a `MOD` and a `MAC` at once (cases A, B, D). `BUILD`, `LISTCAT` and `PRINT` are present as `MAC` in the CDS (pre-state); a collision with them was not tried.
+- Before the first install of a package with library elements, check every member name against the target CDS, one element type per statement (as done in this note):
 
   ```
   LIST CDS MOD(name1,name2,...) .
@@ -82,5 +81,5 @@ First found with the real package of mbt#310 (114 `++MAC` and 121 `++SRC` member
   LIST CDS MAC(name1,name2,...) .
   ```
 
-  Combining the types in one `LIST CDS` statement is not valid. Rename every hit in the package before it is built.
+  Rename every hit in the package before it is built.
 - Keep a name list of the members of the package and compare it with the CDS as part of the install check, not only the library member list.
