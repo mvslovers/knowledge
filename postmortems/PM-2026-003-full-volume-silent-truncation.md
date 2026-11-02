@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-09-10
 applies_to: [mvs38src, mvsmf]
 tags: [dasd, space, d37, iec031i, mvsmf, ftp, iehlist, silent-truncation, postmortem, rest, http-200]
-related: [MVS-DASD-0001]
+related: [MVS-DASD-0001, MVS-DASD-0003]
 ---
 
 ## Symptom

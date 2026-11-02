@@ -12,7 +12,7 @@ verified_on: 2026-09-14
 verified_platforms: ["MVS/CE (3.0.0)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, mbt]
 tags: [smp, smp4, delete, ver, hma2240, hma2461, hma2380, accept, cond, upgrade, element-ownership, mbt]
-related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0007, MVS-SMP-0009, MVS-SMP-0010, MVS-SMP-0011, MVS-SMP-0014]
+related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0007, MVS-SMP-0009, MVS-SMP-0010, MVS-SMP-0011, MVS-SMP-0014, MVS-SMP-0015]
 ---
 
 ## The claim
@@ -80,6 +80,12 @@ Two things the DELETE does **not** do:
 - It does not remove the predecessor's data set, and it can fail on a renamed
   library (`MVS-SMP-0010`). It does not free the id: the predecessor stays as a
   tombstone (`MVS-SMP-0009`).
+
+## A second data point: FTPD 1.3.0 on TK5 and MVS/CE
+
+FTPD 1.3.0 (TFTP130, `DELETE(TFTP120)`) repeated points 4 and 5 on two distributions: APPLY RC 04 with
+`HMA2461 SYSMOD TFTP120 NOT FOUND ON SMPSCDS LIBRARY` on TK5, where SMP had installed 1.2.0, and every step
+RC 00 without `HMA2461` on MVS/CE, where SMP had never seen the image's 1.2.0 (`MVS-SMP-0015`). `[tested]`
 
 ## Not covered
 

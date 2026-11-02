@@ -11,7 +11,7 @@ sources:
 verified_on: 2026-10-21
 applies_to: [libc370, ftpd, mvsmf, httpd]
 tags: [rakf, rakf-2.0.0, trkf200, cdt, jesspool, undefined-class, rakf0012, build, security]
-related: [MVS-SEC-0004, MVS-SEC-0005, MVS-SEC-0009, MVS-SEC-0011, MVS-SEC-0012, ECO-0008, ECO-0020, MVS-SEC-0008, MVS-VSAM-0002]
+related: [MVS-SEC-0004, MVS-SEC-0005, MVS-SEC-0009, MVS-SEC-0011, MVS-SEC-0012, ECO-0008, ECO-0020, MVS-SEC-0008, MVS-VSAM-0002, MVS-SEC-0013]
 ---
 
 ## Terms used in the security documents

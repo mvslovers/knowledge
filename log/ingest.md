@@ -429,3 +429,49 @@ GIVEN` on three consecutive APPLY jobs (JOB01080, JOB01081, JOB01083) on a
 system that has no `SYS1.PASSWORD`. Not reproducible afterwards under controlled
 variation of job name, job description, SMPCNTL content and submission path. No
 root cause, therefore no document — recorded here so the observation is not lost.
+
+## 2026-11-02 — weekly inbox run (MVS-1454): FTPD recovery, FTPD 1.3.0 upgrade, RAKF without tables, SRC/MAC collisions, LNKLST and SYSDA placement
+
+Sources: five inbox items of 2026-10-21 to 2026-11-01, all measured in throwaway
+containers (TK5 image of 2026-10-18, MVS/CE 3.0.0). Claims were checked against the
+sources the items cite: RAKF `ICHSFR00` / `ICHSEC00` at 4093978 and 019acf4, libc370
+and ftpd source at origin/main, ftpd `docs/installation.md` at 5afc39a, and the fix
+commit for the silent PASS (ftpd#258, PR #259, e039c02).
+
+Created:
+
+- **`MVS-SEC-0013`** — old RAKF without valid tables lets every `racf_login` and
+  `racf_auth` through as STC/STCGROUP; RAKF 2.0.0 does not start.
+- **`MVS-SMP-0015`** — the install job of an upgrade fails quietly in three ways
+  (return codes that mislead, allocation order, stale XMIT).
+- **`MVS-SMP-0016`** — `++SRC` named like a `MOD` is assembled, `++MAC` named like a
+  `MAC` is skipped.
+- **`MVS-DASD-0003`** — `SYS1.PARMLIB` full on TK5, SD37 (D37-04) on the first new
+  member.
+- **`MVS-DASD-0004`** — where `UNIT=SYSDA` without `VOL=SER` lands; SMP4 has no DDDEFs.
+- **`MVS-LNK-0006`** — LNKLST library: master catalog or volser, volume online at IPL.
+
+Changed: `ECO-0020` (traced why an unauthorized `PASS` is silent in FTPD: 240 s
+silence, 421 after 303 s, `FTPD071E` after three; the former "not established"
+bullet replaced; the `racf_set_acee()` MODESET path recorded as source only),
+`MVS-SEC-0011` (missing members behave like invalid ones), `MVS-SMP-0008` and
+`MVS-SMP-0014` (a second product, FTPD 1.3.0), and the `related` lists of
+`MVS-SEC-0009`, `MVS-SEC-0010`, `MVS-SMP-0002`, `MVS-SMP-0006`, `MVS-SMP-0007`,
+`MVS-SMP-0011`, `MVS-LNK-0001`, `MVS-DASD-0001`, `PM-2026-003` and `ECO-0007`
+(reciprocal links).
+
+No conflicts raised; nothing contradicted an existing document. One reading was not
+adopted: the FTPD 1.3.0 item glosses `D37-04` as "the directory of the PDS is full".
+`PM-2026-003` and ftpd's installation guide read `SD37` as out of space, and a compress
+does not add directory blocks; `MVS-DASD-0003` records the measured abend and both
+cures and marks the cause `[assumed]`.
+
+Dropped from the items, not recorded: the port number and the PASV remark of the FTPD
+1.3.0 item (a port of a private test setup), and a BREXX/370 space estimate taken as a
+measurement (kept only as "calculated, not measured").
+
+Left in the inbox, unchanged: `2026-10-17-eco0004-ieavsy50-pending-measurement.md`
+(reading of IBM source, measurement pending), `2026-10-19-smp4-messungen-…`
+(volser/orphan claims not verifiable from the cited sources) and
+`2026-10-20-libc370-215-lazy-grtfile-in-key0-window-s0c4.md` (two side claims without
+public source or output).
