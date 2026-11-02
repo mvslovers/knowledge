@@ -12,7 +12,7 @@ verified_on: 2026-09-14
 verified_platforms: ["MVS/CE (3.0.0)"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, mbt]
 tags: [smp, smp4, not-sel, element-ownership, mod, cds, hma2380, hma2270, fmid, install]
-related: [ECO-0007, MVS-SMP-0004, MVS-SMP-0007, MVS-SMP-0008, MVS-SMP-0009, MVS-SMP-0014]
+related: [MVS-SMP-0016, ECO-0007, MVS-SMP-0004, MVS-SMP-0007, MVS-SMP-0008, MVS-SMP-0009, MVS-SMP-0014]
 ---
 
 ## The claim

@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-10-21
 applies_to: [ftpd, mvsmf, libc370]
 tags: [rakf, cjyrprof, rakfprof, loader, sort, u0300, u0400, u0500, reload, security]
-related: [MVS-SEC-0006, MVS-SEC-0008, MVS-SEC-0011, ECO-0008, MVS-SEC-0010]
+related: [MVS-SEC-0006, MVS-SEC-0008, MVS-SEC-0011, ECO-0008, MVS-SEC-0010, MVS-SEC-0013]
 ---
 
 ## The claims

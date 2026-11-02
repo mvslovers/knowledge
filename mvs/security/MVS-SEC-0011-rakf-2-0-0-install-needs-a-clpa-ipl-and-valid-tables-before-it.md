@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-10-21
 applies_to: [mvs-docker, libc370, ftpd, httpd, mvsmf]
 tags: [rakf, rakf-2.0.0, trkf200, smp4, clpa, ipl, lpalib, cold-start, jes2, users, profiles, security]
-related: [MVS-SEC-0009, MVS-SEC-0010, MVS-SEC-0012, ECO-0007]
+related: [MVS-SEC-0009, MVS-SEC-0010, MVS-SEC-0012, MVS-SEC-0013, ECO-0007]
 ---
 
 ## The claims
@@ -41,6 +41,11 @@ related: [MVS-SEC-0009, MVS-SEC-0010, MVS-SEC-0012, ECO-0007]
     from the console was found. Reproduced twice, with garbage PROFILES (valid USERS) and with garbage USERS
     (valid PROFILES). `[tested]` The mechanism was not read in the source; the "missing user table" as the cause
     is `[inferred]` (the two cases cannot isolate "profiles only missing").
+  - **Missing members give the same failure**, with either table or both absent (`IEC141I 013-18` for
+    `RAKFPROF` / `RAKFUSER`, then the messages above); the variants with only one table affected make the
+    link to the tables more than an inference. The abend code of JES2 was still not analysed and the
+    mechanism not read in the source. `[tested]` The old RAKF's open state in detail, with the `racf_login`
+    results: MVS-SEC-0013.
   - **The tables have to be valid before the IPL.** Nothing else was tried; the containers were discarded.
     `[tested]`
 - An invalid file at a *reload* is harmless in comparison: the old chain stays (MVS-SEC-0009).
