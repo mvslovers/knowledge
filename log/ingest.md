@@ -475,3 +475,47 @@ Left in the inbox, unchanged: `2026-10-17-eco0004-ieavsy50-pending-measurement.m
 (volser/orphan claims not verifiable from the cited sources) and
 `2026-10-20-libc370-215-lazy-grtfile-in-key0-window-s0c4.md` (two side claims without
 public source or output).
+
+## 2026-11-09 — weekly inbox run (MVS-1860): ISPF split screen and VGET/VPUT, freed subpool 1, PTS REJECT indicator
+
+Stacked on the open PR for the 2026-11-02 run (branch `ingest-1454-weekly`), so that no
+ID is used twice. Five new inbox items of 2026-11-04 to 2026-11-06. The measured items
+cite raw result files in `mvslovers/usermods` (branch `zmg0003/ispf-test`); each row was
+read back from them. The SMP item was reproduced on two fresh TK5 containers (digest
+`sha256:2e4210c4…c14c6`).
+
+Created:
+
+- **`MVS-TSO-0006`** — ISPF logical screens share one ECT; `ECTIOWA` is per screen,
+  `ECTENVBK` is not; two live BREXX/370 dialogs lose input.
+- **`MVS-TSO-0007`** — `VGET` after `VPUT` without `DISPLAY` fetches or not, RC 0
+  either way (4 measured cases; the length pattern is marked `[assumed]`).
+- **`MVS-SUP-0003`** — reading a freed 36,864-byte subpool 1 area abends S0C4-11.
+- **`MVS-SMP-0017`** — the PTS SYSTEM `REJECT` indicator decides whether RESTORE deletes
+  the SYSMOD from SMPPTS; `DEL SYS REJECT` syntax (reproduced 2026-11-09).
+
+Changed: `MVS-SMP-0013` (the syntax for `REJECT` is established; `PURGE` still is not),
+`MVS-SMP-0005` (pointer to `MVS-SMP-0017`), and the `related:` lists of `MVS-TSO-0003`
+and `MVS-SUP-0002` (reciprocal links).
+
+No conflicts raised. Existing documents were extended, none contradicted:
+`MVS-TSO-0003` records the stale `ECTENVBK` after a normal exit, `MVS-TSO-0006` adds
+the ISPF case and the attention case; `MVS-SMP-0013` said the syntax was not
+established, `MVS-SMP-0017` supplies it for `REJECT`.
+
+Dropped from the items, not recorded as fact: the cross-screen TCB-reuse claim and the
+"PA1 gave READY at a CLIST READ" claim of the ISPF split-screen item, and the design
+history of `IKJCT441`'s owner word in the subpool 1 item (neither is in a public source).
+The manual quotation in the SMP item was not checked against the manual and appears in
+`MVS-SMP-0017` only as reported.
+
+Left in the inbox:
+
+- `2026-11-06-smp4-pts-reject-indicator-restore-reapply-measured.md` — trimmed to the
+  part not reproduced (ZMG0003 specifics, MVS/CE `HMA3022`, the SUP form, instrument
+  errors; the raw output is in scratchpads and will not last).
+- `2026-11-06-wally-ispf-dynamic-area-attributes-measured.md` — unchanged. The data
+  stream decoding is the whole evidence, and its probe commit is not in the cited project
+  (the other commit shows only the panel and the program that use the area attributes),
+  so no claim could be checked against output.
+- The three older files of the 2026-11-02 run, unchanged for the same reasons.

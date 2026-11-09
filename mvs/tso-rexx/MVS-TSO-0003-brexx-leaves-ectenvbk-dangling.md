@@ -11,7 +11,7 @@ verified_on: 2026-09-26
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [rexx370, brexx370, httprexx]
 tags: [tso, rexx, brexx, ectenvbk, ect, envblock, irxanchr, coexistence, s0c4, dangling-pointer]
-related: [MVS-TSO-0001, MVS-TSO-0002]
+related: [MVS-TSO-0001, MVS-TSO-0002, MVS-TSO-0006]
 ---
 
 ## The claim

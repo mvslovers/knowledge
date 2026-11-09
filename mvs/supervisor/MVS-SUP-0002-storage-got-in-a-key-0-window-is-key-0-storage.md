@@ -10,7 +10,7 @@ sources:
 verified_on: 2026-10-20
 applies_to: [libc370, ufsd]
 tags: [storage-key, psw-key, key-0, spka, ipk, getmain, subpool-252, s0c4, s30a, super, tcbpkf]
-related: [ECO-0013]
+related: [ECO-0013, MVS-SUP-0003]
 ---
 
 ## The claim
