@@ -11,7 +11,7 @@ verified_on: 2026-09-14
 verified_platforms: ["MVS/CE (3.0.0)", "TK5 Update 5"]
 applies_to: [ufsd, ftpd, httpd, mvsmf, mbt]
 tags: [smp, smp4, return-code, verification, idcams, mvsmf, encoding, cp037, idc4229i, not-sel]
-related: [ECO-0007, MVS-SMP-0006, MVS-SMP-0008, MVS-SMP-0010]
+related: [MVS-SMP-0016, ECO-0007, MVS-SMP-0006, MVS-SMP-0008, MVS-SMP-0010]
 ---
 
 ## The claim
