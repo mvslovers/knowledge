@@ -12,7 +12,7 @@ verified_on: 2026-09-25
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [rexx370]
 tags: [smp, smp4, restore, reject, usermod, jclin, lmod, csect, inventory, hma2462, hma2033]
-related: [ECO-0007, MVS-SMP-0004, MVS-SMP-0013]
+related: [ECO-0007, MVS-SMP-0004, MVS-SMP-0013, MVS-SMP-0017]
 ---
 
 ## The claims
@@ -105,3 +105,7 @@ FUNCTION the same message appears with no RESTORE involved, and the probable
 cause there is `PURGE=YES` in the PTS SYSTEM entry. `[inferred]` The two readings
 agree: `HMA2462` means "no MCS in the PTS", whatever removed it. See
 `MVS-SMP-0013`.
+
+The PTS SYSTEM entry has a separate `REJECT` indicator that makes RESTORE delete
+the SYSMOD from the SMPPTS; with it off, RESTORE leaves the SYSMOD received
+(`MVS-SMP-0017`).

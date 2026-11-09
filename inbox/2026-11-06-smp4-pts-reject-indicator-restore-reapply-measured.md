@@ -16,71 +16,12 @@ Job numbers are container-local.
 Touches `MVS-SMP-0013`, which says the syntax to change these indicators is "not established" after
 seven failed `REP` variants, and `MVS-SMP-0005`, which notes that RESTORE takes the MCS away.
 
-## The syntax
+## Ingested 2026-11-09 (see MVS-SMP-0017)
 
-From GC28-0673-6, OS/VS SMP System Programmer's Guide (Sep 1980), section "UCL - SMPPTS SYSTEM Entry",
-quoted verbatim:
-
-> When the PTS SYSTEM entry is created, the REJECT indicator is set. To reset the indicator requires a
-> second UCL statement specified as "DEL SYS REJECT.".
-
-Also, in the RESTORE section:
-
-> When a SYSMOD is successfully restored and the REJECT indicator is on in the PTS SYSTEM entry, the
-> SYSMOD is also rejected from the PTS
-
-Measured on TK5 (JOB 47 to 48, and JOB 68 to 69), both UCLIN jobs RC 0:
-
-```
-UCLIN PTS .
-DEL SYS REJECT .
-ENDUCL .
-```
-
-`LIST PTS .` before, after `DEL SYS REJECT`, and after `ADD SYS REJECT`:
-
-```
-SYSTEM    OPTIONS         = PAGELEN=0061  PEMAX=9999  PURGE=YES  REJECT=YES
-SYSTEM    OPTIONS         = PAGELEN=0061  PEMAX=9999  PURGE=YES  REJECT=NO
-SYSTEM    OPTIONS         = PAGELEN=0061  PEMAX=9999  PURGE=YES  REJECT=YES
-```
-
-The manual gives `DEL SYS PURGE` and `ADD SYS PURGE` the same way. **`PURGE` was not measured**, so
-`REJECT` after an ACCEPT under `PURGE=NO` (the open point of `MVS-SMP-0013`) is still open.
-
-## The two cases on TK5
-
-Fresh system, ZP60014 and ZP60038 `REC APP` and not accepted, ZMG0003 installed, then
-`RESTORE SELECT(ZMG0003,ZP60014,ZP60038) .`, then `APPLY SELECT(ZP60014,ZP60038) DIS(WRITE) .`
-
-| | `REJECT=YES` (as distributed) | `REJECT=NO` |
-|---|---|---|
-| RESTORE | RC 4, all three out (JOB 50) | RC 4, all three out (JOB 53) |
-| `LIST PTS SYSMOD(...)` after it | not taken | all three there, `STATUS = REC` |
-| re-APPLY | RC 12, HMA4012 (JOB 53) | RC 0 (JOB 56) |
-| IKJPTGT, AMBLIST text lines | 1502, stays so | 1533, line-identical to before the install |
-| Install ZMG0003 again | RC 12, HMA3022 `ZP60038 PRE` | RC 0, same module as the first install |
-
-The two columns come from two containers; the only change between them is the UCLIN.
-
-```
-HMA4012 ** SYSMOD ZP60014 SELECTED FOR APPLY NOT FOUND ON SMPPTS LIBRARY
-HMA4012 ** SYSMOD ZP60038 SELECTED FOR APPLY NOT FOUND ON SMPPTS LIBRARY
-```
-
-So on a system with `REJECT=YES`, RESTORE of an applied usermod removes it for good unless its job
-stream is still at hand. **The indicator must be off before the RESTORE.** The way back after a
-RESTORE under `REJECT=YES` (RECEIVE from the original job stream) was not measured.
-
-Full cycle under `REJECT=NO`, with both forms of the usermod (below): install 1576 lines, RESTORE 1502,
-re-APPLY 1533 and equal to the baseline, IPL with TSO logon, second install equal to the first, second
-RESTORE and re-APPLY equal to the baseline again.
-
-`EXEC` in `SYS1.CMDLIB` also carries a ZP60014 module. In a separate run without ZMG0003, RESTORE plus
-re-APPLY of ZP60014 and ZP60038 left it line-identical (769 lines; 742 while restored; JOB 43 to 48).
-
-RESTORE RC 4: the job shows `HMA2391 LINK SUCCESSFUL ... LMOD=IKJPTGT ... RETURN CODE=04`. That this is
-the cause of the RC 4 is my reading, not established.
+The `DEL SYS REJECT` / `ADD SYS REJECT` syntax and the `REJECT=YES`/`NO` RESTORE-and-re-APPLY
+outcome were reproduced on TK5 with ZP60014 and ZP60038 and moved to `MVS-SMP-0017`. What follows
+is the part not reproduced (ZMG0003 specifics, MVS/CE, SUP form, the instrument errors); the
+manual quotation (GC28-0673-6) could not be checked, the manual was not at hand.
 
 ## The REJECT indicator does not help with unaccepted requisites
 

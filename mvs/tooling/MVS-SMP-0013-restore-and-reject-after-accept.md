@@ -12,7 +12,7 @@ verified_on: 2026-10-21
 verified_platforms: ["MVS/CE (3.0.0)", "TK5 Update 5"]
 applies_to: [ufsd, ftpd, httpd, mbt]
 tags: [smp, smp4, restore, reject, accept, purge, smppts, hma2452, hma2462, hma3703, hma2032, hma2033, uclin, function]
-related: [ECO-0007, MVS-SMP-0002, MVS-SMP-0005, MVS-SMP-0009, MVS-SMP-0014]
+related: [ECO-0007, MVS-SMP-0002, MVS-SMP-0005, MVS-SMP-0009, MVS-SMP-0014, MVS-SMP-0017]
 ---
 
 ## The claims
@@ -69,7 +69,9 @@ Not established: how to change the option. `UCLIN PTS .` followed by `REP
 SYSTEM`, `REP SYS` or `REP OPTIONS`, with `OPTIONS(PURGE=NO)` or `PURGE(NO)`,
 ended `HMA2032 ** SYNTAX ERROR IN UCL STATEMENT` (RC 08) on the REP statement in
 seven variants. The right syntax is unknown, so the `PURGE=NO` case is
-unmeasured.
+unmeasured. **Update 2026-11-09:** the syntax for the sibling `REJECT` indicator
+is `UCLIN PTS .` with `DEL SYS REJECT .` / `ADD SYS REJECT .`, measured in
+`MVS-SMP-0017`. `PURGE` itself is still unmeasured.
 
 ## What this does to the guidance
 
