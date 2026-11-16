@@ -11,7 +11,7 @@ verified_on: 2026-09-27
 verified_platforms: ["MVS/CE (3.0.0)"]
 applies_to: [mbt, brexx370]
 tags: [smp, smp4, alias, talias, mod, copy, jclin, delete, mbt]
-related: [MVS-SMP-0008, ECO-0007]
+related: [MVS-SMP-0016, MVS-SMP-0008, ECO-0007]
 ---
 
 ## The claims

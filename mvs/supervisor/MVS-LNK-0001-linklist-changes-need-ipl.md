@@ -12,7 +12,7 @@ verified_on: 2026-09-27
 verified_platforms: ["MVS/CE 3.0.0 (mvsdev)"]
 applies_to: [rexx370, brexx370, ufsd, ftpd, httpd, mvsmf]
 tags: [linklist, lnklst, ieabld, resident-bldl, iea703i, abend106, program-fetch, compress, iebcopy, extent, ipl, cmdlib]
-related: [MVS-SMP-0004, MVS-BLDL-0001, MVS-LNK-0002]
+related: [MVS-SMP-0004, MVS-BLDL-0001, MVS-LNK-0002, MVS-LNK-0006]
 ---
 
 ## The claims

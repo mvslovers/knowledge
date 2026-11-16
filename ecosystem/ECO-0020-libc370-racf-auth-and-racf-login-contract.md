@@ -10,10 +10,12 @@ sources:
   - "RAKF v2.0.0 (commit 019acf4): SRCLIB/ICHSFR00.hlasm, label RACHCHK (WORKNLOG from ACHKLOGS), the ENTYWARN and ENTYFAIL paths, WTOUNKN"
   - "MVS/CE throwaway container, 2026-10-21 (container-local): small libc370 2.25.1 probe programs (racf_get_acee, racf_auth, racf_login) linked AC(0) and AC(1), run from a load library that is not on the APF list and, as a control, from SYS2.LINKLIB; RAKF 2.0.0 installed from the release deck"
   - "MVS/CE throwaway container, 2026-10-21: FTPD 1.2.0 started in the same non-APF state (APF SETUP FAILED RC=4), client session timed against it"
+  - "MVS/CE throwaway container, 2026-10-21 (Paperclip MVS-345, as reported in the inbox note; job numbers not applicable): FTPD main 5f5734b (1.3.0-DEV) in the same state with a non-APF STEPLIB and SVC244 READ removed for STCGROUP, client session timed; control run with the permission restored"
+  - "ftpd 5f5734b, src/ftpd#ses.c: ftpd_session_recover step 1 racf_set_acee (line 429), try(ftpd_run_command) (667), try(ftpd_session_recover) (675), FTPD071E after FTPD_MAX_RECOVER = 3 (include/ftpd.h:83); libc370 origin/main 77b83ef, src/mvs/racf/racsacee.c (TESTAUTH, then MODESET KEY=ZERO,MODE=SUP); ftpd e039c02 (fix for ftpd#258, merged as PR #259)"
 verified_on: 2026-10-21
 applies_to: [libc370, ftpd, mvsmf, httpd]
 tags: [libc370, racf_auth, racf_login, saf, rakf, apf, s047, log-none, return-code, rakf0005]
-related: [MVS-SEC-0001, MVS-SEC-0004, MVS-SEC-0010, MVS-SEC-0012, ECO-0008, ECO-0021, ECO-0022]
+related: [MVS-SEC-0001, MVS-SEC-0004, MVS-SEC-0010, MVS-SEC-0012, ECO-0008, ECO-0021, ECO-0022, MVS-SEC-0013]
 ---
 
 Two libc370 calls front the SAF router: `racf_auth()` (RACHECK) and `racf_login()` (RACINIT). Programs
@@ -59,11 +61,44 @@ checks below ran against RAKF 2.0.0 (see MVS-SEC-0010 for how that differs from 
   started task whose user is in a group other than `STCGROUP` gets that group (MVS-SEC-0012): the probe's
   own ACEE showed user `JSPROBS`, group `USER`, `FACILITY SVC244` = 8; the same probe in `STCGROUP` got 0.
   `[tested]`
+- **`racf_set_acee()` has the same entry as `racf_login()`**: it tests for supervisor state and otherwise
+  does `MODESET KEY=ZERO,MODE=SUP`, so it too ends in S047 in an unauthorized caller instead of returning an
+  error code. `[source: libc370 77b83ef src/mvs/racf/racsacee.c]` The S047 was not observed on its own;
+  it is the reading that fits the FTPD observation below.
 - **A server that depends on `racf_login()` hangs rather than refusing when it is not authorized.** The
   FTPD 1.2.0 release, started in the non-APF state, answered the connect and `USER` (`220`, `331`),
   gave **no reply at all** to `PASS` for 100 s (the client timed out), and answered `530 Not logged in`
   to the next command; login never reached `230`. `[tested]` FTPD main (commit e039c02, 2026-10-21)
   answers `530` at once in that state (ECO-0021).
+- **Why the PASS is silent, traced in FTPD (main 5f5734b, before the fix).** The command runs under
+  `try(ftpd_run_command)`. `racf_login()` abends S047; the recovery `ftpd_session_recover()` starts with
+  `racf_set_acee(stc_acee)`, which abends S047 again inside the recovery. The surrounding
+  `try(ftpd_session_recover)` swallows that second abend, so the console message `FTPD070E` (step 3) and the
+  client reply (step 4) are never reached, and the loop goes on. `[source: ftpd src/ftpd#ses.c lines 429,
+  667, 675]` The observations fit: `[tested]`
+  - `PASS` gets no reply within 240 s; the next command on the same connection is answered at once (`NOOP`
+    200, `PWD` 530), so the session thread is not hung. Every further `PASS` is silent and the attempt
+    counter never advances.
+  - Only the idle timeout ends it: `421 Idle timeout, closing connection` after 303 s (`IDLETIMEOUT` 300).
+  - Three `PASS` in a row end with `FTPD071E SESSION SOCKET=n CLOSED AFTER 3 CONSECUTIVE ABENDS` on the
+    console and the socket closed without a reply; any command in between that succeeds resets the counter
+    (`recover_count`), so a client that alternates is never closed. `[source: ses.c 698-707]`
+  - STDOUT of the started task has no "RAKF login failed" line and the console no `FTPD070E`: `racf_login()`
+    never returned and the recovery never got to its WTO.
+  - Other sessions are served normally up to `PASS`; the listener and the worker pool are not affected.
+  - Setup: `FACILITY SVC244` READ for `STCGROUP` removed from `SYS1.SECURE.CNTL(PROFILES)`, `S RAKF`;
+    startup showed `RAKF0005`/`RAKF000A STC,FTPD,FACILITY,SVC244`, `FTPD003W APF SETUP FAILED RC=4`, then
+    `FTPD001I ... READY`. In that container FTPD had no USERS entry, so it ran as `STC`/`STCGROUP`
+    (`RAKF0010I ... STARTED USING DEFAULT STC ACCOUNT`, `FTPD004I STC RUNS AS STC/STCGROUP`) with SVC244
+    denied. Control run, permission restored and `S RAKF`: `FTPD008I AUTHORIZED BY SVC (MODULE KEY 8)`,
+    `PASS` answered 230 in 0.09 s.
+- **The general rule from it** (libc370 `racf_login()` and `racf_set_acee()` in any program): check the
+  authorization before calling either, and never call them from the recovery routine of a program that may
+  run unauthorized. A second abend inside a recovery that is wrapped in its own `try()` leaves no trace.
+  FTPD's fix (ftpd#258, PR #259, e039c02): `ftpd_auth_pass` answers `530` before it calls `racf_login`,
+  and the recovery resets the STC identity only on an authorized task, under a `try()` of its own, so
+  `FTPD070E` and the client reply follow; a failed reset is `FTPD077E`. `[source: commit message of
+  e039c02]` The fix was read in the code, not re-measured on MVS at ingest.
 
 ## The evidence
 
@@ -89,5 +124,5 @@ authorized control:
 
 - The behaviour of libc370 older than 2.25.1 with the flag byte is a source fact only (libc370#63);
   nothing older was run.
-- Why the FTPD 1.2.0 release hangs on `PASS` rather than failing was not traced; the observation is the
-  silent 100 s, and the later `530 Not logged in`.
+- The S047 inside `racf_set_acee()` during the FTPD recovery was never seen, because the surrounding `try()`
+  discards it; it rests on the source and on the observed symptoms.
