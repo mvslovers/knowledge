@@ -519,3 +519,47 @@ Left in the inbox:
   (the other commit shows only the panel and the program that use the area attributes),
   so no claim could be checked against output.
 - The three older files of the 2026-11-02 run, unchanged for the same reasons.
+
+## 2026-11-16 — weekly inbox run (MVS-2042): Wally ISPF Help key, PF keys per application, SELECT CMD cut
+
+Stacked on the open PR for the 2026-11-09 run (branch `ingest-1860-weekly`, itself stacked
+on `ingest-1454-weekly`), so that no ID is used twice. Two new inbox items of 2026-11-11
+and 2026-11-12, both from the SDSF clone project. Their claims were run again in a
+throwaway MVS/CE container with mbt's TSO test driver (Wally ISPF V2.2.000, user IBMUSER);
+the documents state what was reproduced and what was not.
+
+Created:
+
+- **`MVS-TSO-0008`** — the Help key shows the `.HELP` panel and nothing more (ZSEL, ZCONT,
+  ZUP, ZHTOP, ZHINDEX not evaluated); without `.HELP` it returns to the dialog with RC 0
+  and `.PFKEY`.
+- **`MVS-TSO-0009`** — `ZPFnn` is stored per application ID; `PFK()` in a panel returns the
+  default keys only; `KEYS` in a command field not named ZCMD reaches the dialog.
+- **`MVS-TSO-0010`** — `SELECT CMD(%name parm)` drops the last character of `parm`
+  (four call forms measured).
+
+No conflicts raised. Nothing existing was contradicted; the ISPF items `MVS-TSO-0006` and
+`MVS-TSO-0007` cover other ISPF behaviour.
+
+Not reproduced, so recorded as reported (`assumed`) or left out:
+
+- The TK5 tutorial driver (`LBTUTOR`, `ISPTUTOR`) and its key behaviour: the MVS/CE image
+  has no such member and no TK5 container was started. Kept in `MVS-TSO-0008` only as
+  a report.
+- SDSF's own behaviour (PF7 showing SDSF's help, Help-key detection by `VCOPY`): SDSF was
+  not run.
+- The "255 bytes" padding of `ZPFnn` by length: seen only through a cut record.
+- The inbox claim that ZVERB is blank after PF3: one run gave `END`, two gave blanks;
+  `MVS-TSO-0008` says it is not established.
+
+Left in the inbox, unchanged:
+
+- `2026-11-06-wally-ispf-dynamic-area-attributes-measured.md` — the 3270 data stream decoding
+  is the whole evidence and its probe commit is not in the cited project; nothing could
+  be checked against output.
+- `2026-11-06-smp4-pts-reject-indicator-restore-reapply-measured.md` — the trimmed remainder
+  (see the 2026-11-09 entry).
+- `2026-10-17-eco0004-ieavsy50-pending-measurement.md`,
+  `2026-10-19-smp4-messungen-aus-root-claude-md.md`,
+  `2026-10-20-libc370-215-lazy-grtfile-in-key0-window-s0c4.md` — unchanged, same reasons as in
+  the 2026-11-02 entry.
